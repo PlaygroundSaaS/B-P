@@ -3,6 +3,7 @@ export type LineCategory = 'stem' | 'sundry';
 export interface InventoryItem {
   id: string;
   name: string;
+  colour?: string;
   costPerStem: number;
   stemsPurchased: number;
   stemsRemaining: number;
@@ -20,6 +21,7 @@ export interface QuoteLine {
 export interface Quote {
   id: string;
   clientName: string;
+  contact?: string;
   occasion: 'Bouquet' | 'Wedding' | 'Funeral' | 'Corporate';
   eventDate: string;
   lines: QuoteLine[];
@@ -31,6 +33,7 @@ export interface Quote {
   discount: number;
   vatApplies: boolean;
   vatRate: number;
+  notes?: string;
   createdAt: string;
 }
 
