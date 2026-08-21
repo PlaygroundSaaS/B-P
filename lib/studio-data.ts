@@ -6,6 +6,8 @@ export function reviveData(value: unknown): StudioData {
   return {
     version: 1,
     inventory: Array.isArray(raw.inventory) ? raw.inventory.map(item => ({ ...item, costPerStem: num(item.costPerStem), stemsPurchased: num(item.stemsPurchased), stemsRemaining: num(item.stemsRemaining) })) : [],
+    materials: Array.isArray(raw.materials) ? raw.materials.map(material => ({ ...material, unitCost: num(material.unitCost) })) : [],
+    customers: Array.isArray(raw.customers) ? raw.customers : [],
     quotes: Array.isArray(raw.quotes) ? raw.quotes : [],
     jobs: Array.isArray(raw.jobs) ? raw.jobs : [],
     plans: Array.isArray(raw.plans) ? raw.plans : [],

@@ -9,6 +9,22 @@ export interface InventoryItem {
   stemsRemaining: number;
 }
 
+export interface Material {
+  id: string;
+  name: string;
+  category: string;
+  unit: string;
+  unitCost: number;
+}
+
+export interface Customer {
+  id: string;
+  name: string;
+  contact: string;
+  notes: string;
+  createdAt: string;
+}
+
 export interface QuoteLine {
   id: string;
   inventoryId: string | null;
@@ -51,6 +67,15 @@ export interface WeddingPlan {
   notes: string;
   finishedEstimate: number | null;
   createdAt: string;
+  venue?: string;
+  guestCount?: number | null;
+  budget?: number | null;
+  palette?: string;
+  favouriteFlowers?: string;
+  avoidFlowers?: string;
+  arrangements?: string;
+  contact?: string;
+  status?: 'Enquiry' | 'Planning' | 'Proposal sent' | 'Booked';
 }
 
 export interface Settings {
@@ -78,6 +103,8 @@ export interface QuoteTotals {
 export interface StudioData {
   version: number;
   inventory: InventoryItem[];
+  materials: Material[];
+  customers: Customer[];
   quotes: Quote[];
   jobs: Job[];
   plans: WeddingPlan[];
