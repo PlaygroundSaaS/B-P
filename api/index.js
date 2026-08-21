@@ -11,7 +11,7 @@ function user(req) { try { return jwt.verify((req.headers.cookie || '').match(/s
 function send(res, status, data) { res.status(status).json(data); }
 module.exports = async (req, res) => {
   const path = new URL(req.url, 'http://x').pathname.replace('/api', '') || '/';
-  if (path === '/auth/login' && req.method === 'POST') {
+  if ((path === '/auth/login' || path === '/login') && req.method === 'POST') {
     const { email, password } = body(req);
     if (email !== process.env.STUDIO_EMAIL || password !== process.env.STUDIO_PASSWORD) return send(res, 401, { error: 'Incorrect email or password.' });
     res.setHeader('Set-Cookie', cookie('studio_token', jwt.sign({ email }, process.env.AUTH_SECRET, { expiresIn: '8h' }), 28800));
