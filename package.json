@@ -1,0 +1,8 @@
+{
+  "name": "bramble-petal-studio",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": { "dev": "vercel dev" },
+  "dependencies": { "jsonwebtoken": "9.0.2", "pg": "8.13.1" }
+}
+
