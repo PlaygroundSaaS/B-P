@@ -1,2 +1,8 @@
-{ "version": 2, "rewrites": [{ "source": "/studio", "destination": "/studio.html" }] }
+{
+  "version": 2,
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/index.js" },
+    { "source": "/studio", "destination": "/studio.html" }
+  ]
+}
 
