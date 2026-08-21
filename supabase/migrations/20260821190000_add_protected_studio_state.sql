@@ -1,11 +1,16 @@
 create table if not exists public.studio_state (
-  id text primary key,
+  owner_id uuid primary key references auth.users(id) on delete cascade,
   data jsonb not null,
-  updated_at timestamptz not null default now(),
-  constraint studio_state_id_check check (id = 'bramble-petal')
+  updated_at timestamptz not null default now()
 );
 
 alter table public.studio_state enable row level security;
-revoke all on table public.studio_state from anon, authenticated;
-grant select, insert, update, delete on table public.studio_state to service_role;
+grant select, insert, update on table public.studio_state to authenticated;
+
+create policy "studio owner can read" on public.studio_state
+for select to authenticated using ((select auth.uid()) = owner_id);
+create policy "studio owner can insert" on public.studio_state
+for insert to authenticated with check ((select auth.uid()) = owner_id);
+create policy "studio owner can update" on public.studio_state
+for update to authenticated using ((select auth.uid()) = owner_id) with check ((select auth.uid()) = owner_id);
 
