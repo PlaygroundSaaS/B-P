@@ -2,7 +2,6 @@
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { calculateTotals, DEFAULT_SETTINGS, money } from '@/lib/pricing';
-import { createClient } from '@/lib/supabase/client';
 import type { InventoryItem, Quote, QuoteLine, StudioData, WeddingPlan } from '@/lib/types';
 
 const id = () => globalThis.crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2);
@@ -17,58 +16,29 @@ export default function StudioClient() {
   const [tab, setTab] = useState<'dashboard' | 'inventory' | 'calculator' | 'jobs' | 'plans'>('dashboard');
   const [clientType, setClientType] = useState<'Wedding' | 'Funeral' | 'Corporate'>('Wedding');
   const [loading, setLoading] = useState(true);
-  const [signedIn, setSignedIn] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [authBusy, setAuthBusy] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
   useEffect(() => {
-    let active = true;
-    const loadStudio = async () => {
-      const response = await fetch('/api/studio');
-      if (!response.ok) throw new Error((await response.json()).error);
-      const loaded = await response.json() as StudioData;
-      if (active) { setData(loaded); setQuote(blankQuote(loaded.settings)); setSignedIn(true); }
-    };
-    try {
-      const supabase = createClient();
-      supabase.auth.getUser().then(({ data: auth, error: authError }) => {
-        if (authError) throw authError;
-        return auth.user ? loadStudio() : undefined;
-      }).catch(err => active && setError(err instanceof Error ? err.message : 'Unable to check your Studio sign-in.')).finally(() => active && setLoading(false));
-    } catch (err) { setError(err instanceof Error ? err.message : 'Supabase sign-in is not configured.'); setLoading(false); }
-    return () => { active = false; };
+    const saved = globalThis.localStorage.getItem('bramble-petal-studio-data');
+    if (saved) {
+      try {
+        const loaded = JSON.parse(saved) as StudioData;
+        setData(loaded);
+        setQuote(blankQuote(loaded.settings));
+      } catch { globalThis.localStorage.removeItem('bramble-petal-studio-data'); }
+    }
+    setLoading(false);
   }, []);
-
-  const signIn = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault(); setAuthBusy(true); setError('');
-    try {
-      const supabase = createClient();
-      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-      if (signInError) throw signInError;
-      const response = await fetch('/api/studio');
-      if (!response.ok) throw new Error((await response.json()).error);
-      const loaded = await response.json() as StudioData;
-      setData(loaded); setQuote(blankQuote(loaded.settings)); setSignedIn(true);
-    } catch (err) { setError(err instanceof Error ? err.message : 'Sign-in was not successful.'); }
-    finally { setAuthBusy(false); }
-  };
-  const signOut = async () => {
-    await createClient().auth.signOut(); setSignedIn(false); setScreen('choose'); setData(initialData());
-  };
 
   const persist = async (next: StudioData, success: string) => {
     setData(next); setSaving(true); setError('');
     try {
-      const response = await fetch('/api/studio', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(next) });
-      if (!response.ok) throw new Error((await response.json()).error);
+      globalThis.localStorage.setItem('bramble-petal-studio-data', JSON.stringify(next));
       setMessage(success);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Your change could not be saved.');
-    } finally { setSaving(false); }
+    } catch { setError('Your browser could not save this change locally.'); }
+    finally { setSaving(false); }
   };
   const totals = useMemo(() => calculateTotals(quote), [quote]);
   const stockValue = data.inventory.reduce((sum, item) => sum + item.stemsRemaining * item.costPerStem, 0);
@@ -115,11 +85,10 @@ export default function StudioClient() {
   };
 
   if (loading) return <main className="loading">Preparing your Studio Hub…</main>;
-  if (!signedIn) return <main className="login-screen"><form className="panel-form" onSubmit={signIn}><p className="eyebrow">BRAMBLE &amp; PETAL</p><h1>Studio Hub</h1><p>Sign in to securely manage your flowers, plans and clients.</p>{error && <p className="form-error">{error}</p>}<label>Email<input type="email" value={email} onChange={event => setEmail(event.target.value)} required /></label><label>Password<input type="password" value={password} onChange={event => setPassword(event.target.value)} required /></label><button className="button" disabled={authBusy}>{authBusy ? 'Signing in…' : 'Sign in'}</button></form></main>;
   if (screen === 'choose') return <main className="choose-screen"><p className="eyebrow">BRAMBLE &amp; PETAL</p><h1>Studio Hub</h1><p className="welcome-copy">Choose the space that suits this moment.</p><div className="choice-grid"><button className="choice-card" onClick={() => setScreen('business')}><span>FOR JADE &amp; THE TEAM</span><strong>Enter Business Side</strong><small>Inventory, quoting, jobs and client plans.</small></button><button className="choice-card" onClick={() => setScreen('client')}><span>FOR CONSULTATIONS</span><strong>Enter Client Planning Studio</strong><small>A customer-safe space for wedding, funeral and corporate planning.</small></button></div></main>;
 
   const nav = (name: typeof tab, label: string) => <button className={tab === name ? 'active' : ''} onClick={() => setTab(name)}>{label}</button>;
-  return <main className="studio-shell"><header className="studio-nav"><button className="brand-button" onClick={() => setScreen('choose')}><b>✾</b><span>Bramble &amp; Petal<small>{screen === 'business' ? 'FLORIST STUDIO APP' : 'CLIENT PLANNING STUDIO'}</small></span></button>{screen === 'business' ? <nav>{nav('dashboard', 'Dashboard')}{nav('inventory', 'Inventory')}{nav('calculator', 'Calculator')}{nav('jobs', 'Jobs Won')}{nav('plans', 'Wedding Planner')}</nav> : <nav>{(['Wedding', 'Funeral', 'Corporate'] as const).map(type => <button className={clientType === type ? 'active' : ''} key={type} onClick={() => setClientType(type)}>{type}</button>)}</nav>}<button className="exit-button" onClick={signOut}>Sign out</button></header>
+  return <main className="studio-shell"><header className="studio-nav"><button className="brand-button" onClick={() => setScreen('choose')}><b>✾</b><span>Bramble &amp; Petal<small>{screen === 'business' ? 'FLORIST STUDIO APP' : 'CLIENT PLANNING STUDIO'}</small></span></button>{screen === 'business' ? <nav>{nav('dashboard', 'Dashboard')}{nav('inventory', 'Inventory')}{nav('calculator', 'Calculator')}{nav('jobs', 'Jobs Won')}{nav('plans', 'Wedding Planner')}</nav> : <nav>{(['Wedding', 'Funeral', 'Corporate'] as const).map(type => <button className={clientType === type ? 'active' : ''} key={type} onClick={() => setClientType(type)}>{type}</button>)}</nav>}<button className="exit-button" onClick={() => setScreen('choose')}>Change space</button></header>
     {message && <p className="notice">{message}</p>}{error && <p className="notice error">{error}</p>}
     {screen === 'client' ? <section className="studio-content planner"><p className="eyebrow">CLIENT-SAFE PLANNING</p><h1>{clientType} flower plan</h1><p>Capture every wish, favourite flower and meaningful detail. Internal cost, VAT and markup are never shown here.</p><form className="panel-form" onSubmit={savePlan}><label>Client name<input name="clientName" required /></label><label>Event date<input name="eventDate" type="date" /></label><label>What matters most?<textarea name="notes" required placeholder="Favourite flowers, colours, venue, personal details and must-haves…" /></label><label>Finished estimate (£)<input name="estimate" type="number" min="0" step="0.01" /></label><button className="button" disabled={saving}>Save our ideas</button></form><section className="records"><h2>Saved ideas</h2>{data.plans.filter(plan => plan.type === clientType).map(plan => <article key={plan.id}><b>{plan.clientName}</b><span>{plan.eventDate || 'Date to confirm'}</span><p>{plan.notes}</p>{plan.finishedEstimate !== null && <strong>{money(plan.finishedEstimate)}</strong>}</article>) || <p>No {clientType.toLowerCase()} plans saved yet.</p>}</section></section> : <section className="studio-content">
       {tab === 'dashboard' && <><div className="hero-title"><p className="eyebrow">BRAMBLE &amp; PETAL</p><h1>Studio Overview</h1><span>— ✾ —</span></div><div className="metric-grid"><article><small>INVENTORY VALUE<br />(EX VAT)</small><b>{money(stockValue)}</b></article><article><small>INVENTORY VALUE<br />(INC VAT)</small><b>{money(stockValue * 1.2)}</b></article><article><small>JOBS WON</small><b>{data.jobs.length}</b></article><article><small>TOTAL REVENUE</small><b>{money(data.jobs.reduce((sum, job) => sum + job.totals.grossTotal, 0))}</b></article></div><div className="dashboard-grid"><article><h2>Low &amp; out of stock</h2>{data.inventory.filter(item => item.stemsRemaining < 10).map(item => <p key={item.id}>{item.name} — {item.stemsRemaining} left</p>) || <p>Nothing low at the moment.</p>}</article><article><h2>Upcoming events</h2>{data.plans.slice(0, 3).map(plan => <p key={plan.id}>{plan.clientName} — {plan.type}</p>) || <p>No plans added yet.</p>}</article></div></>}
