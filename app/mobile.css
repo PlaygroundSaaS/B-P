@@ -9,7 +9,7 @@
   .landing-hero { min-height: 625px; height: 100svh; max-height: 720px; background-position: 54% 12% !important; }
   .landing-nav { align-items: flex-start; padding: 10px 14px; gap: 10px; }
   body .landing .landing-brand { width: 116px; height: 78px; flex-basis: 116px; }
-  .landing-account { margin-top: 9px; min-height: 46px; padding: 9px 11px; font-size: 7px; line-height: 1.25; display: flex; align-items: center; }
+  .landing-account { margin-top: 9px; min-height: 46px; padding: 9px 11px; font-size: 7px; line-height: 1.25; display: grid; align-items: center; }
   .landing-account span { font-size: 18px; }
   .landing-hero-copy { top: 45%; transform: translate(-50%, -40%); }
   .landing-wordmark span { font-size: clamp(39px, 11vw, 49px); letter-spacing: -1.3px; }
@@ -165,3 +165,4 @@
   .landing-card { min-width: 82vw; }
   .customer-stat-grid { grid-template-columns: 1fr; }
 }
+
