@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=DM+Sans:wght@400;500&display=swap');
 @import './studio-enhancements.css';
 @import './landing-enhancements.css';
+@import './landing-sympathy.css';
 .landing-hero{background-image:linear-gradient(90deg,rgba(33,36,23,.38),rgba(36,36,27,.03) 57%),url('/assets/hero.jpg')!important}
 .landing-hero{background-position:center 8%!important}
 /* Public floral site — kept separate from the Studio interface. */

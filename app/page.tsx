@@ -49,7 +49,20 @@ export default function Home() {
             <a className="landing-card wedding" href="#enquire"><span>Weddings<small>View more</small></span></a>
             <a className="landing-card events" href="#enquire"><span>Events<small>View more</small></span></a>
             <a className="landing-card bouquets" href="#enquire"><span>Bouquets<small>View more</small></span></a>
-            <a className="landing-card sympathy" href="#enquire"><span>Sympathy<small>View more</small></span></a>
+            <a className="landing-card sympathy" href="#sympathy"><span>Sympathy<small>View more</small></span></a>
+          </div>
+        </section>
+
+        <section className="landing-sympathy" id="sympathy">
+          <div className="landing-sympathy-copy">
+            <p className="landing-eyebrow">SYMPATHY FLOWERS</p>
+            <h2>Flowers to remember, honour and celebrate a life.</h2>
+            <p>At a difficult time, flowers can say what words cannot. We create personal funeral tributes, sprays, wreaths and farewell arrangements with care, sensitivity and attention to every meaningful detail.</p>
+            <a className="landing-text-link" href="#enquire">Arrange sympathy flowers</a>
+          </div>
+          <div className="landing-sympathy-images">
+            <figure><img src="/assets/sympathy-tribute.jpg" alt="A floral funeral tribute and letter arrangement" /><figcaption>Personal farewell tributes</figcaption></figure>
+            <figure><img src="/assets/sympathy-spray.jpg" alt="A natural white and green floral spray" /><figcaption>Natural funeral sprays</figcaption></figure>
           </div>
         </section>
 
