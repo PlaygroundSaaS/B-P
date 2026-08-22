@@ -57,6 +57,11 @@ export default function StudioClient() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
+  const signOut = async () => {
+    await fetch('/api/studio/logout', { method: 'POST' });
+    globalThis.location.assign('/studio');
+  };
+
   useEffect(() => {
     const saved = globalThis.localStorage.getItem('bramble-petal-studio-data');
     if (saved) {
@@ -281,7 +286,7 @@ export default function StudioClient() {
   const selectedCustomerPlans = selectedCustomer ? data.plans.filter(plan => plan.clientName.toLocaleLowerCase() === selectedCustomer.name.toLocaleLowerCase()) : [];
   const selectedCustomerJobs = selectedCustomer ? data.jobs.filter(job => job.clientName.toLocaleLowerCase() === selectedCustomer.name.toLocaleLowerCase()) : [];
   const selectedCustomerQuotes = selectedCustomer ? data.quotes.filter(savedQuote => savedQuote.clientName.toLocaleLowerCase() === selectedCustomer.name.toLocaleLowerCase()) : [];
-  return <main className="studio-shell"><header className="studio-nav"><button className="brand-button" onClick={() => setScreen('choose')}><b>✾</b><span>Bramble &amp; Petal<small>{screen === 'business' ? 'FLORIST STUDIO APP' : 'CLIENT PLANNING STUDIO'}</small></span></button>{screen === 'business' ? <nav>{nav('dashboard', 'Dashboard')}{nav('inventory', 'Inventory')}{nav('calculator', 'Calculator')}{nav('jobs', 'Jobs Won')}{nav('clients', 'Clients')}{nav('settings', 'Settings')}</nav> : <nav>{(['Wedding', 'Funeral', 'Corporate'] as const).map(type => <button className={clientType === type ? 'active' : ''} key={type} onClick={() => setClientType(type)}>{type}</button>)}</nav>}<button className="exit-button" onClick={() => setScreen('choose')}>Change space</button></header>
+  return <main className="studio-shell"><header className="studio-nav"><button className="brand-button" onClick={() => setScreen('choose')}><b>✾</b><span>Bramble &amp; Petal<small>{screen === 'business' ? 'FLORIST STUDIO APP' : 'CLIENT PLANNING STUDIO'}</small></span></button>{screen === 'business' ? <nav>{nav('dashboard', 'Dashboard')}{nav('inventory', 'Inventory')}{nav('calculator', 'Calculator')}{nav('jobs', 'Jobs Won')}{nav('clients', 'Clients')}{nav('settings', 'Settings')}</nav> : <nav>{(['Wedding', 'Funeral', 'Corporate'] as const).map(type => <button className={clientType === type ? 'active' : ''} key={type} onClick={() => setClientType(type)}>{type}</button>)}</nav>}<div className="studio-session-actions"><button className="exit-button" onClick={() => setScreen('choose')}>Change space</button><button className="signout-button" onClick={() => void signOut()}>Sign out</button></div></header>
     {message && <p className="notice">{message}</p>}{error && <p className="notice error">{error}</p>}
     {screen === 'client' ? (
       <section className="studio-content planner">
