@@ -33,7 +33,7 @@ export default function Home() {
             <p>We create distinctive floral arrangements for weddings, events and everyday celebrations.</p>
             <a className="landing-text-link" href="#gallery">About Bramble &amp; Petal</a>
           </div>
-          <img src="https://images.unsplash.com/photo-1487530811176-3780de880c2d?auto=format&amp;fit=crop&amp;w=950&amp;q=85" alt="Delicate seasonal flower arrangement" />
+          <img src="/assets/bouquet-04.jpg" alt="A peach, blush and cream Bramble and Petal bouquet" />
         </section>
 
         <section className="landing-values" aria-label="Our values">
@@ -49,7 +49,7 @@ export default function Home() {
           <div className="landing-cards">
             <a className="landing-card wedding" href="#enquire"><span>Weddings<small>View more</small></span></a>
             <a className="landing-card events" href="#enquire"><span>Events<small>View more</small></span></a>
-            <a className="landing-card bouquets" href="#bouquets"><span>Bouquets<small>View more</small></span></a>
+            <a className="landing-card bouquets" href="#enquire"><span>Bouquets<small>View more</small></span></a>
             <a className="landing-card sympathy" href="#sympathy"><span>Sympathy<small>View more</small></span></a>
           </div>
         </section>
@@ -64,21 +64,6 @@ export default function Home() {
             <ul><li>Wedding flowers and styling</li><li>Funeral tributes with care and sensitivity</li><li>Corporate events, launches and installations</li></ul>
             <a className="landing-text-link" href="#enquire">Book a studio consultation</a>
           </div>
-        </section>
-
-        <section className="landing-bouquets" id="bouquets">
-          <div className="landing-section-heading">
-            <div><p className="landing-eyebrow">HAND-TIED BOUQUETS</p><h2>Beautiful flowers, gathered just for them</h2></div>
-            <p>Thoughtfully made bouquets for birthdays, thank-yous, celebrations and the days that simply call for flowers.</p>
-          </div>
-          <div className="landing-bouquet-grid">
-            <figure className="bouquet-hero"><Image src="/assets/bouquet-01.jpg" alt="Soft pink and cream bouquet held by a florist" fill sizes="(max-width: 700px) 100vw, 44vw" /><figcaption>Soft and seasonal</figcaption></figure>
-            <figure><Image src="/assets/bouquet-02.jpg" alt="Lilac, white rose and lily bouquet" fill sizes="(max-width: 700px) 50vw, 28vw" /><figcaption>Pastel favourites</figcaption></figure>
-            <figure><Image src="/assets/bouquet-03.jpg" alt="Autumn bouquet with warm orange flowers" fill sizes="(max-width: 700px) 50vw, 28vw" /><figcaption>Autumn colour</figcaption></figure>
-            <figure><Image src="/assets/bouquet-04.jpg" alt="Peach and blush rose bouquet" fill sizes="(max-width: 700px) 50vw, 28vw" /><figcaption>Peach and blush</figcaption></figure>
-            <figure><Image src="/assets/bouquet-05.jpg" alt="Bright mixed seasonal bouquet" fill sizes="(max-width: 700px) 50vw, 28vw" /><figcaption>Bright and joyful</figcaption></figure>
-          </div>
-          <a className="landing-text-link landing-bouquet-link" href="#enquire">Order a bespoke bouquet</a>
         </section>
 
         <section className="landing-recent-work">
@@ -122,7 +107,7 @@ export default function Home() {
         </section>
 
         <section className="landing-story">
-          <div className="landing-story-image"><img src="https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=1100&q=85" alt="Natural flowers and foliage" /></div>
+          <div className="landing-story-image"><img src="/assets/studio-work-5.jpg" alt="Fresh seasonal flowers in the Bramble and Petal studio" /></div>
           <div className="landing-story-copy">
             <p className="landing-eyebrow">THE STUDIO</p>
             <h2>Flowers should feel like they belong to your story.</h2>
