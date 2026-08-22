@@ -115,12 +115,9 @@ export default function Home() {
             <div><p className="landing-eyebrow">A SELECTION OF OUR WORK</p><h2>Flowers with a sense of place</h2></div>
             <p>From a single gathered bouquet to an entire room in bloom, every design is made around the people, season and setting.</p>
           </div>
-          <div className="landing-gallery-grid">
-            <figure className="gallery-tall"><Image src="/assets/bouquet-06.jpg" alt="Gift-boxed bouquets ready to give" fill sizes="(max-width: 700px) 50vw, 38vw" /><figcaption><span>01</span> Flowers made for giving</figcaption></figure>
-            <figure><Image src="/assets/bouquet-07.jpg" alt="A pink bouquet in front of the flower stand" fill sizes="(max-width: 700px) 50vw, 28vw" /><figcaption><span>02</span> Fresh from the flower stand</figcaption></figure>
-            <figure><Image src="/assets/bouquet-08.jpg" alt="A white floral arrangement in a glass vase" fill sizes="(max-width: 700px) 50vw, 28vw" /><figcaption><span>03</span> A thoughtful thank-you</figcaption></figure>
-            <figure><Image src="/assets/bouquet-09.jpg" alt="Yellow and white rose bouquet with daisies" fill sizes="(max-width: 700px) 50vw, 28vw" /><figcaption><span>04</span> Sunshine in a bouquet</figcaption></figure>
-            <figure className="gallery-wide"><Image src="/assets/bouquet-10.jpg" alt="A white lily bouquet wrapped in kraft paper" fill sizes="(max-width: 700px) 100vw, 57vw" /><figcaption><span>05</span> Timeless lilies and delicate details</figcaption></figure>
+          <div className="landing-gallery-grid landing-gallery-grid--two">
+            <figure><Image src="/assets/bouquet-07.jpg" alt="A pink bouquet in front of the flower stand" fill sizes="(max-width: 700px) 100vw, 50vw" /><figcaption><span>01</span> Fresh from the flower stand</figcaption></figure>
+            <figure><Image src="/assets/bouquet-10.jpg" alt="A white lily bouquet wrapped in kraft paper" fill sizes="(max-width: 700px) 100vw, 50vw" /><figcaption><span>02</span> Timeless lilies and delicate details</figcaption></figure>
           </div>
         </section>
 
