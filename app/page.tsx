@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Home() {
   return (
@@ -45,12 +46,27 @@ export default function Home() {
         <section className="landing-services" id="services">
           <p className="landing-eyebrow">OUR SERVICES</p>
           <h2>Flowers for every occasion</h2>
-          <div className="landing-cards" id="gallery">
+          <div className="landing-cards">
             <a className="landing-card wedding" href="#enquire"><span>Weddings<small>View more</small></span></a>
             <a className="landing-card events" href="#enquire"><span>Events<small>View more</small></span></a>
-            <a className="landing-card bouquets" href="#enquire"><span>Bouquets<small>View more</small></span></a>
+            <a className="landing-card bouquets" href="#bouquets"><span>Bouquets<small>View more</small></span></a>
             <a className="landing-card sympathy" href="#sympathy"><span>Sympathy<small>View more</small></span></a>
           </div>
+        </section>
+
+        <section className="landing-bouquets" id="bouquets">
+          <div className="landing-section-heading">
+            <div><p className="landing-eyebrow">HAND-TIED BOUQUETS</p><h2>Beautiful flowers, gathered just for them</h2></div>
+            <p>Thoughtfully made bouquets for birthdays, thank-yous, celebrations and the days that simply call for flowers.</p>
+          </div>
+          <div className="landing-bouquet-grid">
+            <figure className="bouquet-hero"><Image src="/assets/bouquet-01.jpg" alt="Soft pink and cream bouquet held by a florist" fill sizes="(max-width: 700px) 100vw, 44vw" /><figcaption>Soft and seasonal</figcaption></figure>
+            <figure><Image src="/assets/bouquet-02.jpg" alt="Lilac, white rose and lily bouquet" fill sizes="(max-width: 700px) 50vw, 28vw" /><figcaption>Pastel favourites</figcaption></figure>
+            <figure><Image src="/assets/bouquet-03.jpg" alt="Autumn bouquet with warm orange flowers" fill sizes="(max-width: 700px) 50vw, 28vw" /><figcaption>Autumn colour</figcaption></figure>
+            <figure><Image src="/assets/bouquet-04.jpg" alt="Peach and blush rose bouquet" fill sizes="(max-width: 700px) 50vw, 28vw" /><figcaption>Peach and blush</figcaption></figure>
+            <figure><Image src="/assets/bouquet-05.jpg" alt="Bright mixed seasonal bouquet" fill sizes="(max-width: 700px) 50vw, 28vw" /><figcaption>Bright and joyful</figcaption></figure>
+          </div>
+          <a className="landing-text-link landing-bouquet-link" href="#enquire">Order a bespoke bouquet</a>
         </section>
 
         <section className="landing-sympathy" id="sympathy">
@@ -72,11 +88,11 @@ export default function Home() {
             <p>From a single gathered bouquet to an entire room in bloom, every design is made around the people, season and setting.</p>
           </div>
           <div className="landing-gallery-grid">
-            <figure className="gallery-tall"><img src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=900&q=85" alt="Wedding flowers in soft neutral tones" /><figcaption><span>01</span> An English garden wedding</figcaption></figure>
-            <figure><img src="https://images.unsplash.com/photo-1507504031003-b417219a0fde?auto=format&fit=crop&w=800&q=85" alt="Seasonal bridal bouquet" /><figcaption><span>02</span> A gathered bridal bouquet</figcaption></figure>
-            <figure><img src="https://images.unsplash.com/photo-1494972308805-463bc619d34e?auto=format&fit=crop&w=800&q=85" alt="Flowers arranged on a table" /><figcaption><span>03</span> A table set for celebration</figcaption></figure>
-            <figure><img src="https://images.unsplash.com/photo-1487530811176-3780de880c2d?auto=format&fit=crop&w=800&q=85" alt="A delicate arrangement of flowers" /><figcaption><span>04</span> The beauty of the season</figcaption></figure>
-            <figure className="gallery-wide"><img src="https://images.unsplash.com/photo-1523438885200-e635ba2c371e?auto=format&fit=crop&w=1200&q=85" alt="Textural flowers and foliage" /><figcaption><span>05</span> Textural blooms for an intimate gathering</figcaption></figure>
+            <figure className="gallery-tall"><Image src="/assets/bouquet-06.jpg" alt="Gift-boxed bouquets ready to give" fill sizes="(max-width: 700px) 50vw, 38vw" /><figcaption><span>01</span> Flowers made for giving</figcaption></figure>
+            <figure><Image src="/assets/bouquet-07.jpg" alt="A pink bouquet in front of the flower stand" fill sizes="(max-width: 700px) 50vw, 28vw" /><figcaption><span>02</span> Fresh from the flower stand</figcaption></figure>
+            <figure><Image src="/assets/bouquet-08.jpg" alt="A white floral arrangement in a glass vase" fill sizes="(max-width: 700px) 50vw, 28vw" /><figcaption><span>03</span> A thoughtful thank-you</figcaption></figure>
+            <figure><Image src="/assets/bouquet-09.jpg" alt="Yellow and white rose bouquet with daisies" fill sizes="(max-width: 700px) 50vw, 28vw" /><figcaption><span>04</span> Sunshine in a bouquet</figcaption></figure>
+            <figure className="gallery-wide"><Image src="/assets/bouquet-10.jpg" alt="A white lily bouquet wrapped in kraft paper" fill sizes="(max-width: 700px) 100vw, 57vw" /><figcaption><span>05</span> Timeless lilies and delicate details</figcaption></figure>
           </div>
         </section>
 
