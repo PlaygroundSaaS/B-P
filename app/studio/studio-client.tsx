@@ -97,6 +97,8 @@ export default function StudioClient() {
   const stockValue = data.inventory.reduce((sum, item) => sum + item.stemsRemaining * item.costPerStem, 0);
   const wastageLoss = data.wastage.reduce((sum, item) => sum + item.quantity * item.unitCost, 0);
   const wastageStems = data.wastage.reduce((sum, item) => sum + item.quantity, 0);
+  const jobProfit = data.jobs.reduce((sum, job) => sum + job.totals.profit, 0);
+  const businessProfit = jobProfit - wastageLoss;
 
   const addInventory = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault(); const form = new FormData(event.currentTarget);
@@ -297,6 +299,7 @@ export default function StudioClient() {
           <article><small>INVENTORY VALUE<br />(INC VAT)</small><b>{money(stockValue * 1.2)}</b></article>
           <article><small>JOBS WON</small><b>{data.jobs.length}</b></article>
           <article><small>TOTAL REVENUE</small><b>{money(data.jobs.reduce((sum, job) => sum + job.totals.grossTotal, 0))}</b></article>
+          <article className="profit-metric"><small>PROFIT<br />(AFTER LOGGED WASTAGE)</small><b>{money(businessProfit)}</b><span>{money(jobProfit)} before wastage</span></article>
           <article className="loss-metric"><small>WASTAGE LOSS<br />(AT COST)</small><b>{money(wastageLoss)}</b><span>{wastageStems} stem{wastageStems === 1 ? '' : 's'} logged</span></article>
         </div>
         <div className="dashboard-grid">
