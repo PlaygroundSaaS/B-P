@@ -53,6 +53,42 @@ export default function Home() {
           </div>
         </section>
 
+        <section className="landing-portfolio" id="gallery">
+          <div className="landing-section-heading">
+            <div><p className="landing-eyebrow">A SELECTION OF OUR WORK</p><h2>Flowers with a sense of place</h2></div>
+            <p>From a single gathered bouquet to an entire room in bloom, every design is made around the people, season and setting.</p>
+          </div>
+          <div className="landing-gallery-grid">
+            <figure className="gallery-tall"><img src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=900&q=85" alt="Wedding flowers in soft neutral tones" /><figcaption><span>01</span> An English garden wedding</figcaption></figure>
+            <figure><img src="https://images.unsplash.com/photo-1507504031003-b417219a0fde?auto=format&fit=crop&w=800&q=85" alt="Seasonal bridal bouquet" /><figcaption><span>02</span> A gathered bridal bouquet</figcaption></figure>
+            <figure><img src="https://images.unsplash.com/photo-1494972308805-463bc619d34e?auto=format&fit=crop&w=800&q=85" alt="Flowers arranged on a table" /><figcaption><span>03</span> A table set for celebration</figcaption></figure>
+            <figure><img src="https://images.unsplash.com/photo-1487530811176-3780de880c2d?auto=format&fit=crop&w=800&q=85" alt="A delicate arrangement of flowers" /><figcaption><span>04</span> The beauty of the season</figcaption></figure>
+            <figure className="gallery-wide"><img src="https://images.unsplash.com/photo-1523438885200-e635ba2c371e?auto=format&fit=crop&w=1200&q=85" alt="Textural flowers and foliage" /><figcaption><span>05</span> Textural blooms for an intimate gathering</figcaption></figure>
+          </div>
+        </section>
+
+        <section className="landing-story">
+          <div className="landing-story-image"><img src="https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=1100&q=85" alt="Natural flowers and foliage" /></div>
+          <div className="landing-story-copy">
+            <p className="landing-eyebrow">THE STUDIO</p>
+            <h2>Flowers should feel like they belong to your story.</h2>
+            <p>Bramble &amp; Petal is a floral studio drawn to quiet beauty, changing seasons and the thoughtful details that make an occasion feel entirely personal.</p>
+            <p>We work closely with our clients from first ideas to final stem, creating flowers that are generous, characterful and made to be remembered.</p>
+            <a className="landing-text-link" href="#enquire">Meet with the studio</a>
+          </div>
+        </section>
+
+        <section className="landing-process">
+          <p className="landing-eyebrow">OUR APPROACH</p><h2>From first thought to final flourish</h2>
+          <div>
+            <article><b>01</b><h3>Begin with your story</h3><p>Tell us about the moment, the people and the feeling you want to create.</p></article>
+            <article><b>02</b><h3>Shape the details</h3><p>We build a seasonal floral direction, thoughtful proposal and clear plan around you.</p></article>
+            <article><b>03</b><h3>Bring it beautifully to life</h3><p>On the day, every stem is placed with care so you can simply enjoy the occasion.</p></article>
+          </div>
+        </section>
+
+        <section className="landing-quote"><p>“The flowers felt as though they had always belonged there — wild, elegant and completely us.”</p><span>— A Bramble &amp; Petal couple</span></section>
+
         <section className="landing-enquire" id="enquire">
           <div>
             <p className="landing-eyebrow">LET&apos;S CREATE SOMETHING BEAUTIFUL</p>
