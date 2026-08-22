@@ -10,6 +10,7 @@
 @import './wedding-workflow.css';
 @import './business-metrics.css';
 @import './job-details.css';
+@import './mobile.css';
 .landing-hero{background-image:linear-gradient(90deg,rgba(33,36,23,.38),rgba(36,36,27,.03) 57%),url('/assets/hero.jpg')!important}
 .landing-hero{background-position:center 8%!important}
 body .landing .landing-card.wedding{background-image:url('/assets/bouquet-02.jpg')!important;background-position:center 28%}

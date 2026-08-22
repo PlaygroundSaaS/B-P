@@ -1,0 +1,167 @@
+/* Phone-first refinements for the public site and the Studio Hub. */
+@media (max-width: 700px) {
+  html { -webkit-text-size-adjust: 100%; }
+  body { overflow-x: hidden; }
+  button, input, select, textarea { font-size: 16px; }
+  button, .button, .landing-button, .landing-account, .landing-text-link { -webkit-tap-highlight-color: transparent; }
+
+  /* Public site */
+  .landing-hero { min-height: 625px; height: 100svh; max-height: 720px; background-position: 54% 12% !important; }
+  .landing-nav { align-items: flex-start; padding: 10px 14px; gap: 10px; }
+  body .landing .landing-brand { width: 116px; height: 78px; flex-basis: 116px; }
+  .landing-account { margin-top: 9px; min-height: 46px; padding: 9px 11px; font-size: 7px; line-height: 1.25; display: flex; align-items: center; }
+  .landing-account span { font-size: 18px; }
+  .landing-hero-copy { top: 45%; transform: translate(-50%, -40%); }
+  .landing-wordmark span { font-size: clamp(39px, 11vw, 49px); letter-spacing: -1.3px; }
+  .landing-wordmark small { letter-spacing: 4px; margin-left: 4px; }
+  .landing-hero-copy em { font-size: 16px; }
+  .landing-button { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; padding: 12px 17px; font-size: 9px; }
+  .landing-intro, .landing-services, .landing-bouquets, .landing-portfolio, .landing-story, .landing-process, .landing-sympathy { padding-left: 20px; padding-right: 20px; }
+  .landing-intro h1 { font-size: 38px; line-height: .96; }
+  .landing-intro>div>p:not(.landing-eyebrow), .landing-section-heading>p, .landing-story-copy>p:not(.landing-eyebrow), .landing-sympathy-copy>p:not(.landing-eyebrow) { font-size: 14px; }
+  .landing-intro img { height: 260px; }
+  .landing-values { display: grid; grid-template-columns: 1fr 1fr; gap: 13px 8px; padding: 20px 14px; }
+  .landing-values div { width: auto; min-width: 0; }
+  .landing-values b { font-size: 25px; }
+  .landing-values strong { font-size: 9px; }
+  .landing-values span { font-size: 8px; }
+  .landing-services h2, .landing-section-heading h2, .landing-story h2, .landing-process h2, .landing-sympathy h2 { font-size: 37px; }
+  .landing-cards { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; padding: 2px 0 9px; margin-right: -20px; gap: 10px; }
+  .landing-card { min-width: 75vw; height: 215px; scroll-snap-align: start; }
+  .landing-card span { font-size: 18px; }
+  .landing-card small { font-size: 9px; }
+  .landing-bouquet-grid, .landing-gallery-grid { gap: 9px; }
+  .landing-bouquet-grid { grid-template-rows: 290px 175px 175px; }
+  .landing-gallery-grid { grid-template-rows: 215px 175px 175px; }
+  .landing-bouquet-grid figcaption, .landing-gallery-grid figcaption { font-size: 17px; }
+  .landing-sympathy-images { gap: 9px; }
+  .landing-sympathy-images img { height: 260px; }
+  .landing-sympathy-images figure:last-child img { height: 210px; }
+  .landing-story-image { height: 330px; }
+  .landing-process article p, .landing-quote span { font-size: 12px; }
+  .landing-quote p { font-size: 33px; }
+  .landing-enquire { padding: 52px 20px; }
+  .landing-enquire h2 { font-size: 43px; }
+  .landing-enquire input, .landing-enquire select, .landing-enquire textarea { min-height: 48px; font-size: 16px; }
+  .landing-enquire textarea { min-height: 125px; }
+  .landing-footer { padding: 28px 20px; font-size: 11px; }
+
+  /* Studio shell and navigation */
+  .login-screen { min-height: 100svh; padding: 18px; background-position: 57% center; }
+  .login-screen .panel-form { width: 100%; padding: 25px 20px; }
+  .login-screen h1 { font-size: 47px; }
+  .login-intro { font-size: 16px; }
+  .login-form input { min-height: 48px; }
+  .studio-shell { min-height: 100svh; background-attachment: scroll; }
+  .studio-nav { position: sticky; top: 0; z-index: 15; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 10px; padding: 9px 14px; }
+  .brand-button { min-width: 0; }
+  .brand-button b { width: 30px; height: 30px; flex: 0 0 30px; }
+  .brand-button span { min-width: 0; font-size: 21px; white-space: nowrap; }
+  .brand-button small { font-size: 7px; letter-spacing: 1.2px; }
+  .studio-session-actions { margin-left: 0; gap: 5px; }
+  .studio-session-actions .signout-button { min-height: 37px; padding: 8px 9px; font-size: 9px; }
+  .studio-nav nav { grid-column: 1 / -1; order: initial; width: 100%; gap: 4px; overflow-x: auto; padding: 2px 0 7px; scrollbar-width: none; }
+  .studio-nav nav::-webkit-scrollbar, .landing-cards::-webkit-scrollbar { display: none; }
+  .studio-nav nav button { min-height: 38px; padding: 9px 13px; font-size: 11px; }
+  .studio-content { padding: 36px 15px 56px; }
+  .studio-content h1, .choose-screen h1 { font-size: 43px; }
+  .hero-title { text-align: left; }
+  .hero-title>span { text-align: center; }
+  .choose-screen { min-height: 100svh; padding: 70px 18px 38px; }
+  .welcome-copy { font-size: 20px; margin-bottom: 28px; }
+  .choice-grid { grid-template-columns: 1fr; gap: 12px; }
+  .choice-card { min-height: 210px; padding: 24px; }
+  .choice-card strong { margin: 30px 0 10px; font-size: 35px; }
+
+  /* Dashboard, records and inventory */
+  .metric-grid { grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 27px; }
+  .metric-grid article { min-height: 118px; padding: 16px; }
+  .metric-grid b { margin-top: 18px; font-size: 29px; }
+  .metric-grid small { font-size: 8px; }
+  .dashboard-grid { gap: 12px; margin-top: 18px; }
+  .dashboard-grid article, .records, .panel-form { padding: 18px; }
+  .dashboard-grid h2, .records h2 { font-size: 26px; }
+  .records article { padding: 14px 0 42px; }
+  .records strong { left: 0; right: auto; top: auto; bottom: 12px; font-size: 22px; }
+  .records article button { min-height: 35px; font-size: 10px; }
+  .workspace-heading { gap: 12px; }
+  .workspace-heading .button { min-height: 43px; }
+  .inventory-summary { margin: 18px 0; }
+  .inventory-summary div { padding: 17px; }
+  .inventory-table-wrap { margin-left: -15px; margin-right: -15px; border-radius: 0; }
+  .inventory-table { min-width: 640px; }
+  .inventory-table th, .inventory-table td { padding: 14px 12px; }
+  .inventory-actions { display: flex; gap: 5px; }
+  .wastage-panel { padding: 18px; }
+
+  /* Calculator and planner forms */
+  .quote-workspace { gap: 13px; margin-top: 20px; }
+  .quote-builder, .quote-summary { padding: 17px; }
+  .quote-step h2, .quote-summary h2, .planner-form h2 { font-size: 26px; }
+  .quote-step + .quote-step { margin-top: 18px; padding-top: 18px; }
+  .step-title { align-items: flex-start; }
+  .step-title button { min-height: 38px; }
+  .quote-line-editor { grid-template-columns: minmax(0, 1fr) 86px 32px; padding: 10px; gap: 8px; }
+  .quote-line-editor select, .quote-line-editor input { min-height: 42px; }
+  .quote-line-editor>b { display: none; }
+  .material-line { grid-template-columns: 1fr 86px 30px; }
+  .material-line label:last-of-type { grid-column: 1 / 3; }
+  .quote-summary>span { font-size: 13px; }
+  .quote-summary>strong { font-size: 25px; }
+  .quote-summary .job-won, .secondary-action { min-height: 47px; font-size: 11px; }
+  .planner { padding-top: 32px; }
+  .planner-form { margin-top: 19px; }
+  .planner-form section { padding: 18px; }
+  .planner-form>.button { min-height: 47px; margin: 0 18px 18px; }
+  .planner-form input, .planner-form select { min-height: 45px; }
+  .planner-form textarea { min-height: 120px; }
+  .plan-material-form { grid-template-columns: 1fr 72px; }
+  .plan-material-form button { grid-column: 1 / -1; min-height: 42px; justify-self: stretch; }
+  .plan-material-list { display: grid; }
+  .plan-material-list span { justify-content: space-between; font-size: 11px; }
+  .reference-heading { display: block; }
+  .reference-upload { display: inline-flex; margin-top: 13px; min-height: 42px; align-items: center; }
+  .reference-grid { grid-template-columns: 1fr; }
+  .saved-reference-strip { overflow-x: auto; padding-bottom: 4px; }
+
+  /* Client profile, wedding build, jobs and invoices */
+  .client-directory { grid-template-columns: 1fr; gap: 11px; }
+  .client-card { min-height: 0; padding: 18px; }
+  .customer-stat-grid { gap: 8px; }
+  .customer-stat-grid article { padding: 14px; }
+  .customer-profile-header { margin: 14px 0 20px; padding-bottom: 17px; }
+  .customer-profile-panel { padding: 17px; }
+  .customer-profile-panel h2 { font-size: 26px; }
+  .customer-purchase li { display: block; }
+  .customer-purchase li span { display: block; margin-top: 4px; }
+  .profile-reference-board img { height: 195px; }
+  .wedding-builder { padding: 22px 14px 50px; }
+  .wedding-builder-header h1 { font-size: 39px; }
+  .wedding-builder-panel { padding: 17px; }
+  .wedding-stock-summary { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .wedding-stock-summary strong { font-size: 22px; }
+  .arrangement-list article { padding: 11px; }
+  .arrangement-flower { padding: 10px; }
+  .wedding-price-summary { margin-left: 0; }
+  .invoice-overlay { padding: 0; }
+  .invoice-sheet { min-height: 100svh; padding: 22px 16px; }
+  .invoice-actions { position: sticky; top: 0; padding: 8px 0; background: #fffdf8; z-index: 1; }
+  .invoice-actions button { min-height: 40px; }
+  .invoice-sheet h1 { font-size: 31px; }
+  .invoice-sheet table { min-width: 450px; }
+  .invoice-sheet { overflow-x: auto; }
+  .invoice-totals { min-width: 270px; }
+  .job-detail { padding: 22px 15px 50px; }
+  .job-detail-header h1 { font-size: 40px; }
+  .job-detail-panel { padding: 17px; }
+  .job-detail-panel h2 { font-size: 26px; }
+  .job-detail-actions>button { min-height: 42px; }
+}
+
+@media (max-width: 370px) {
+  .metric-grid { grid-template-columns: 1fr; }
+  .studio-session-actions .signout-button { font-size: 8px; }
+  .landing-wordmark span { font-size: 37px; }
+  .landing-card { min-width: 82vw; }
+  .customer-stat-grid { grid-template-columns: 1fr; }
+}
