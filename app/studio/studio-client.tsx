@@ -136,6 +136,19 @@ export default function StudioClient() {
     const customers: Customer[] = existing ? source.customers.map(customer => customer.id === existing.id ? { ...customer, contact: contact || customer.contact, notes: notes || customer.notes } : customer) : [{ id: id(), name: cleanName, contact, notes, createdAt: new Date().toISOString() }, ...source.customers];
     return { ...source, customers };
   };
+  const deleteCustomer = (customer: Customer) => {
+    const name = customer.name.toLocaleLowerCase();
+    if (!globalThis.confirm(`Delete ${customer.name} and all of their saved quotes, completed jobs and planning briefs? This cannot be undone.`)) return;
+    const next: StudioData = {
+      ...data,
+      customers: data.customers.filter(item => item.id !== customer.id),
+      quotes: data.quotes.filter(item => item.clientName.toLocaleLowerCase() !== name),
+      jobs: data.jobs.filter(item => item.clientName.toLocaleLowerCase() !== name),
+      plans: data.plans.filter(item => item.clientName.toLocaleLowerCase() !== name),
+    };
+    setSelectedCustomerId(null);
+    void persist(next, `${customer.name} and their saved records have been deleted.`);
+  };
   const addFlowerLine = () => {
     const flower = data.inventory[0];
     if (!flower) return setError('Add flowers to inventory before building a quote.');
@@ -246,6 +259,7 @@ export default function StudioClient() {
       {tab === 'clients' && (selectedCustomer ? <section className="customer-profile">
         <button className="back-button" onClick={() => setSelectedCustomerId(null)}>← Back to client book</button>
         <header className="customer-profile-header"><div><p className="eyebrow">CUSTOMER PROFILE</p><h1>{selectedCustomer.name}</h1><p>{selectedCustomer.contact || 'No contact details yet'}</p></div><p>{selectedCustomer.notes || 'No customer notes saved yet.'}</p></header>
+        <button className="delete-client-button" type="button" onClick={() => deleteCustomer(selectedCustomer)}>Delete client and records</button>
         <div className="customer-stat-grid"><article><small>PLANS</small><b>{selectedCustomerPlans.length}</b></article><article><small>JOBS PURCHASED</small><b>{selectedCustomerJobs.length}</b></article><article><small>SAVED QUOTES</small><b>{selectedCustomerQuotes.length}</b></article><article><small>TOTAL PURCHASED</small><b>{money(selectedCustomerJobs.reduce((sum, job) => sum + job.totals.grossTotal, 0))}</b></article></div>
         <section className="customer-profile-panel"><h2>Purchased work</h2>{selectedCustomerJobs.length ? selectedCustomerJobs.map(job => <article className="customer-purchase" key={job.id}><div><b>{job.occasion}</b><span>Won {new Date(job.wonAt).toLocaleDateString('en-GB')} {job.eventDate ? `· event ${new Date(job.eventDate).toLocaleDateString('en-GB')}` : ''}</span></div><strong>{money(job.totals.grossTotal)}</strong><ul>{job.lines.map(line => <li key={line.id}>{line.quantity} × {line.name} <span>{money(line.quantity * line.unitCost)}</span></li>)}</ul></article>) : <p className="empty-state">No completed purchases are saved for this customer yet.</p>}</section>
         <section className="customer-profile-panel"><h2>Saved quotes</h2>{selectedCustomerQuotes.length ? selectedCustomerQuotes.map(savedQuote => <article className="customer-purchase" key={savedQuote.id}><div><b>{savedQuote.occasion} quote</b><span>Created {new Date(savedQuote.createdAt).toLocaleDateString('en-GB')} · {savedQuote.lines.length} item{savedQuote.lines.length === 1 ? '' : 's'}</span></div><strong>{money(calculateTotals(savedQuote).grossTotal)}</strong>{savedQuote.notes && <p>{savedQuote.notes}</p>}</article>) : <p className="empty-state">No open or saved quotes for this customer.</p>}</section>
