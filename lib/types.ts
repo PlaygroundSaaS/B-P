@@ -78,7 +78,9 @@ export interface WeddingPlan {
   finishedEstimate: number | null;
   createdAt: string;
   venue?: string;
-  guestCount?: number | null;
+  brideHeight?: string;
+  tableCount?: number | null;
+  mainTableSize?: string;
   budget?: number | null;
   palette?: string;
   favouriteFlowers?: string;
@@ -87,6 +89,56 @@ export interface WeddingPlan {
   contact?: string;
   status?: 'Enquiry' | 'Planning' | 'Proposal sent' | 'Booked';
   references?: PlanReferenceImage[];
+  materialsNeeded?: PlanMaterial[];
+}
+
+export interface PlanMaterial {
+  id: string;
+  name: string;
+  quantity: number;
+  status: 'Needed' | 'In stock' | 'Ordered' | 'Ready';
+}
+
+export interface WeddingInventoryFlower {
+  id: string;
+  name: string;
+  costPerStem: number;
+  stemsPerPurchase: number;
+  purchases: number;
+}
+
+export interface WeddingArrangementFlower {
+  id: string;
+  inventoryId: string | null;
+  name: string;
+  stemsPerArrangement: number;
+}
+
+export interface WeddingArrangement {
+  id: string;
+  name: string;
+  quantity: number;
+  flowers: WeddingArrangementFlower[];
+  notes?: string;
+}
+
+export interface WeddingMaterialCost {
+  id: string;
+  name: string;
+  quantity: number;
+  unitCost: number;
+}
+
+export interface WeddingBuild {
+  id: string;
+  planId: string;
+  clientName: string;
+  arrangements: WeddingArrangement[];
+  inventory: WeddingInventoryFlower[];
+  materials: WeddingMaterialCost[];
+  markupPercent: number;
+  vatRate: number;
+  updatedAt: string;
 }
 
 export interface PlanReferenceImage {
@@ -127,5 +179,6 @@ export interface StudioData {
   quotes: Quote[];
   jobs: Job[];
   plans: WeddingPlan[];
+  weddingBuilds: WeddingBuild[];
   settings: Settings;
 }

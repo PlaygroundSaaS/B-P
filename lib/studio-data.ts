@@ -12,6 +12,7 @@ export function reviveData(value: unknown): StudioData {
     quotes: Array.isArray(raw.quotes) ? raw.quotes : [],
     jobs: Array.isArray(raw.jobs) ? raw.jobs : [],
     plans: Array.isArray(raw.plans) ? raw.plans : [],
+    weddingBuilds: Array.isArray(raw.weddingBuilds) ? raw.weddingBuilds : [],
     settings: { ...DEFAULT_SETTINGS, ...(raw.settings || {}) },
   };
 }
