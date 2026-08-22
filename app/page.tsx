@@ -69,6 +69,21 @@ export default function Home() {
           <a className="landing-text-link landing-bouquet-link" href="#enquire">Order a bespoke bouquet</a>
         </section>
 
+        <section className="landing-recent-work">
+          <div className="landing-section-heading">
+            <div><p className="landing-eyebrow">FRESH FROM THE STUDIO</p><h2>Every stem has its moment</h2></div>
+            <p>A little look at the flowers, colour and character moving through the studio lately.</p>
+          </div>
+          <div className="landing-recent-grid">
+            <figure><Image src="/assets/studio-work-1.jpg" alt="Rich red roses gathered in a wicker basket" fill sizes="(max-width: 700px) 72vw, 23vw" /><figcaption>Classic red roses</figcaption></figure>
+            <figure><Image src="/assets/studio-work-2.jpg" alt="A natural white bouquet with eucalyptus" fill sizes="(max-width: 700px) 72vw, 23vw" /><figcaption>Wild white and green</figcaption></figure>
+            <figure><Image src="/assets/studio-work-3.jpg" alt="Soft pink tulips hanging in the studio" fill sizes="(max-width: 700px) 72vw, 23vw" /><figcaption>Spring tulips</figcaption></figure>
+            <figure><Image src="/assets/studio-work-4.jpg" alt="Pastel yellow and lilac flowers arranged around a table" fill sizes="(max-width: 700px) 72vw, 23vw" /><figcaption>Colour-led details</figcaption></figure>
+            <figure><Image src="/assets/studio-work-5.jpg" alt="Fresh pink and white seasonal flowers in the studio" fill sizes="(max-width: 700px) 72vw, 23vw" /><figcaption>Fresh from market</figcaption></figure>
+            <figure><Image src="/assets/studio-work-6.jpg" alt="Pink and white hand-tied bouquet ready to give" fill sizes="(max-width: 700px) 72vw, 23vw" /><figcaption>Ready to give</figcaption></figure>
+          </div>
+        </section>
+
         <section className="landing-sympathy" id="sympathy">
           <div className="landing-sympathy-copy">
             <p className="landing-eyebrow">SYMPATHY FLOWERS</p>
