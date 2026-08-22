@@ -1,7 +1,7 @@
 import type { Quote, QuoteTotals, Settings, StudioData } from './types';
 
 export const DEFAULT_SETTINGS: Settings = { defaultMarkup: 250, defaultWastage: 10, labourRate: 25, vatRate: 20 };
-export const emptyStudio = (): StudioData => ({ version: 1, inventory: [], materials: [], customers: [], quotes: [], jobs: [], plans: [], settings: DEFAULT_SETTINGS });
+export const emptyStudio = (): StudioData => ({ version: 1, inventory: [], wastage: [], materials: [], customers: [], quotes: [], jobs: [], plans: [], settings: DEFAULT_SETTINGS });
 export const num = (value: unknown) => {
   const parsed = typeof value === 'number' ? value : Number(String(value ?? '').replace('£', ''));
   return Number.isFinite(parsed) ? parsed : 0;
@@ -22,4 +22,3 @@ export function calculateTotals(quote: Quote): QuoteTotals {
   const profit = round2(netTotal - costSubtotal);
   return { stemCost, sundryCost, materialCost, wastage, labour, costSubtotal, markup, netTotal, vat, grossTotal, profit, marginPercent: netTotal ? round2(profit / netTotal * 100) : 0 };
 }
-

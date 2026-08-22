@@ -9,6 +9,16 @@ export interface InventoryItem {
   stemsRemaining: number;
 }
 
+export interface WastageRecord {
+  id: string;
+  inventoryId: string;
+  name: string;
+  quantity: number;
+  unitCost: number;
+  reason?: string;
+  recordedAt: string;
+}
+
 export interface Material {
   id: string;
   name: string;
@@ -111,6 +121,7 @@ export interface QuoteTotals {
 export interface StudioData {
   version: number;
   inventory: InventoryItem[];
+  wastage: WastageRecord[];
   materials: Material[];
   customers: Customer[];
   quotes: Quote[];
@@ -118,4 +129,3 @@ export interface StudioData {
   plans: WeddingPlan[];
   settings: Settings;
 }
-
