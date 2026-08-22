@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { clearStudioSessionCookie } from '@/lib/studio-auth';
 
 export const runtime = 'nodejs';
 
 export async function POST() {
-  const supabase = await createClient();
-  await supabase.auth.signOut();
-  return NextResponse.json({ ok: true });
+  const response = NextResponse.json({ ok: true });
+  response.cookies.set(clearStudioSessionCookie());
+  return response;
 }
