@@ -76,6 +76,14 @@ export interface WeddingPlan {
   arrangements?: string;
   contact?: string;
   status?: 'Enquiry' | 'Planning' | 'Proposal sent' | 'Booked';
+  references?: PlanReferenceImage[];
+}
+
+export interface PlanReferenceImage {
+  id: string;
+  name: string;
+  dataUrl: string;
+  caption?: string;
 }
 
 export interface Settings {
