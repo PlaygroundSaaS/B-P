@@ -81,6 +81,16 @@ export interface WeddingPlan {
   brideHeight?: string;
   tableCount?: number | null;
   mainTableSize?: string;
+  personRemembered?: string;
+  serviceTime?: string;
+  funeralDirector?: string;
+  serviceWishes?: string;
+  cardMessage?: string;
+  eventFormat?: string;
+  guestCount?: number | null;
+  setupWindow?: string;
+  breakdownTime?: string;
+  venueRestrictions?: string;
   budget?: number | null;
   palette?: string;
   favouriteFlowers?: string;
@@ -182,3 +192,4 @@ export interface StudioData {
   weddingBuilds: WeddingBuild[];
   settings: Settings;
 }
+
