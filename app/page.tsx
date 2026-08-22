@@ -7,7 +7,7 @@ export default function Home() {
       <header className="landing-hero" id="top">
         <nav className="landing-nav" aria-label="Main navigation">
           <a className="landing-brand" href="#top">
-            Bramble<br /><span>&amp; Petal</span><small>FLORAL STUDIO</small>
+            <Image className="landing-brand-mark" src="/assets/brand-mark.jpg" alt="Bramble and Petal floral bicycle mark" width={58} height={58} priority />
           </a>
           <div className="landing-links">
             <a href="#top">Home</a><a href="#about">About</a><a href="#services">Services</a>
