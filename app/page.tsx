@@ -10,7 +10,7 @@ export default function Home() {
             <Image className="landing-brand-mark" src="/assets/brand-logo.png" alt="Bramble and Petal Florist Studio" width={152} height={104} priority />
           </a>
           <div className="landing-links">
-            <a href="#top">Home</a><a href="#about">About</a><a href="#services">Services</a>
+            <a href="#top">Home</a><a href="#about">About</a><a href="#enquire">Services</a>
             <a href="#gallery">Gallery</a><a href="#enquire">Enquire</a><a href="#contact">Contact</a>
           </div>
           <Link className="landing-account" href="/studio"><span aria-hidden="true">✾</span><b>Studio Hub</b><small>Staff sign in</small></Link>
@@ -21,7 +21,7 @@ export default function Home() {
           </div>
           <i />
           <em>Where flowers tell your story</em>
-          <a className="landing-button" href="#services">Discover our work</a>
+          <a className="landing-button" href="#gallery">Discover our work</a>
         </div>
       </header>
 
@@ -41,17 +41,6 @@ export default function Home() {
           <div><b>❀</b><strong>Fresh &amp; seasonal</strong><span>Sourced with care</span></div>
           <div><b>♧</b><strong>Sustainable</strong><span>Beautifully mindful</span></div>
           <div><b>♡</b><strong>Made with love</strong><span>Every time</span></div>
-        </section>
-
-        <section className="landing-services" id="services">
-          <p className="landing-eyebrow">OUR SERVICES</p>
-          <h2>Flowers for every occasion</h2>
-          <div className="landing-cards">
-            <a className="landing-card wedding" href="#enquire"><span>Weddings<small>View more</small></span></a>
-            <a className="landing-card events" href="#enquire"><span>Events<small>View more</small></span></a>
-            <a className="landing-card bouquets" href="#enquire"><span>Bouquets<small>View more</small></span></a>
-            <a className="landing-card sympathy" href="#sympathy"><span>Sympathy<small>View more</small></span></a>
-          </div>
         </section>
 
         {/* Studio consultations for bespoke event flowers. */}
