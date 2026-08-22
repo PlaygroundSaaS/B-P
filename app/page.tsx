@@ -79,6 +79,7 @@ export default function Home() {
           <div className="landing-sympathy-images">
             <figure><img src="/assets/sympathy-tribute.jpg" alt="A floral funeral tribute and letter arrangement" /><figcaption>Personal farewell tributes</figcaption></figure>
             <figure><img src="/assets/sympathy-spray.jpg" alt="A natural white and green floral spray" /><figcaption>Natural funeral sprays</figcaption></figure>
+            <figure><img src="/assets/sympathy-making.jpg" alt="Bramble and Petal florists creating a white and green funeral tribute" /><figcaption>Made with care, by hand</figcaption></figure>
           </div>
         </section>
 
