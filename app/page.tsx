@@ -54,6 +54,7 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Studio consultations for bespoke event flowers. */}
         <section className="landing-consultations">
           <div className="landing-consultations-image"><Image src="/assets/studio-consultations.jpg" alt="The warm Bramble and Petal flower studio consultation space" fill sizes="(max-width: 700px) 100vw, 50vw" /></div>
           <div className="landing-consultations-copy">
