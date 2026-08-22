@@ -54,6 +54,17 @@ export default function Home() {
           </div>
         </section>
 
+        <section className="landing-consultations">
+          <div className="landing-consultations-image"><Image src="/assets/studio-consultations.jpg" alt="The warm Bramble and Petal flower studio consultation space" fill sizes="(max-width: 700px) 100vw, 50vw" /></div>
+          <div className="landing-consultations-copy">
+            <p className="landing-eyebrow">VISIT THE FLOWER STUDIO</p>
+            <h2>Let&apos;s sit down and talk flowers.</h2>
+            <p>Wedding, funeral and corporate consultations can be held in our flower studio — a relaxed, private space to share ideas, look through seasonal flowers and shape every detail together.</p>
+            <ul><li>Wedding flowers and styling</li><li>Funeral tributes with care and sensitivity</li><li>Corporate events, launches and installations</li></ul>
+            <a className="landing-text-link" href="#enquire">Book a studio consultation</a>
+          </div>
+        </section>
+
         <section className="landing-bouquets" id="bouquets">
           <div className="landing-section-heading">
             <div><p className="landing-eyebrow">HAND-TIED BOUQUETS</p><h2>Beautiful flowers, gathered just for them</h2></div>
