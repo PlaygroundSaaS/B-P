@@ -13,7 +13,7 @@ export default function Home() {
             <a href="#top">Home</a><a href="#about">About</a><a href="#services">Services</a>
             <a href="#gallery">Gallery</a><a href="#enquire">Enquire</a><a href="#contact">Contact</a>
           </div>
-          <Link className="landing-account" href="/studio"><span>♙</span> Log into<br />flower studio</Link>
+          <Link className="landing-account" href="/studio"><span aria-hidden="true">✾</span><b>Studio Hub</b><small>Staff sign in</small></Link>
         </nav>
         <div className="landing-hero-copy">
           <div className="landing-wordmark" aria-label="Bramble and Petal Florist Studio">
