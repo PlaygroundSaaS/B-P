@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import './enquiry-form.css';
 
 export const metadata: Metadata = {
   title: 'Bramble & Petal | Florist Studio',
