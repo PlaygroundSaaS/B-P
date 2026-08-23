@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import EnquiryForm from './enquiry-form';
 
 export default function Home() {
   return (
@@ -123,13 +124,7 @@ export default function Home() {
             <h2>Start your floral enquiry</h2>
             <p>Tell us a little about your flowers, event or occasion and we&apos;ll be in touch.</p>
           </div>
-          <form action="mailto:info@bramblesandpetals.co.uk" method="post" encType="text/plain">
-            <input name="name" placeholder="Your name" required />
-            <input name="email" type="email" placeholder="Email address" required />
-            <select name="occasion" defaultValue="Wedding"><option>Wedding</option><option>Funeral flowers</option><option>Corporate event</option><option>Everyday flowers</option><option>Other</option></select>
-            <textarea name="message" placeholder="Tell us what you have in mind" required />
-            <button className="landing-button" type="submit">Send enquiry</button>
-          </form>
+          <EnquiryForm />
         </section>
       </main>
       <footer className="landing-footer" id="contact"><p>Bramble &amp; Petal Floral Studio</p><a href="mailto:info@bramblesandpetals.co.uk">info@bramblesandpetals.co.uk</a></footer>
