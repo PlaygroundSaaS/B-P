@@ -1,0 +1,19 @@
+.landing-enquire .landing-honeypot {
+  display: none;
+}
+
+.landing-enquire .landing-enquiry-status {
+  grid-column: 1 / -1;
+  margin: 2px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.landing-enquire .landing-enquiry-status.success {
+  color: #3d4530;
+}
+
+.landing-enquire .landing-enquiry-status.error {
+  color: #a0372f;
+}
+
