@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react';
+import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { calculateTotals, DEFAULT_SETTINGS, money } from '@/lib/pricing';
 import type { Customer, InventoryItem, Material, PlanMaterial, PlanReferenceImage, Quote, QuoteLine, StudioData, WeddingArrangement, WeddingBuild, WeddingInventoryFlower, WastageRecord, WeddingPlan } from '@/lib/types';
 
@@ -61,6 +61,8 @@ export default function StudioClient() {
   const [jobSearch, setJobSearch] = useState('');
   const [clientSearch, setClientSearch] = useState('');
   const [saveState, setSaveState] = useState<'ready' | 'saving' | 'saved' | 'error'>('ready');
+  const [databaseRevision, setDatabaseRevision] = useState<string | null>(null);
+  const saveInFlight = useRef(false);
 
   const signOut = async () => {
     await fetch('/api/studio/logout', { method: 'POST' });
@@ -79,7 +81,7 @@ export default function StudioClient() {
     const loadDatabase = async () => {
       try {
         const response = await fetch('/api/studio', { cache: 'no-store' });
-        const payload = await response.json() as { data?: Partial<StudioData>; error?: string };
+        const payload = await response.json() as { data?: Partial<StudioData>; error?: string; updatedAt?: string | null };
         if (!response.ok || !payload.data) throw new Error(payload.error || 'The Studio database could not be loaded.');
         const databaseData = normaliseData(payload.data);
 
@@ -87,15 +89,18 @@ export default function StudioClient() {
           const importResponse = await fetch('/api/studio', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(localData),
+            body: JSON.stringify({ data: localData, expectedUpdatedAt: payload.updatedAt ?? null }),
           });
           if (!importResponse.ok) throw new Error('Existing device records could not be imported to Supabase.');
+          const imported = await importResponse.json() as { updatedAt?: string };
+          setDatabaseRevision(imported.updatedAt ?? payload.updatedAt ?? null);
           setData(localData);
           setQuote(blankQuote(localData.settings));
           setMessage('Existing Studio records imported to Supabase.');
         } else {
           setData(databaseData);
           setQuote(blankQuote(databaseData.settings));
+          setDatabaseRevision(payload.updatedAt ?? null);
         }
         globalThis.localStorage.removeItem('bramble-petal-studio-data');
         setSaveState('saved');
@@ -144,16 +149,22 @@ export default function StudioClient() {
   }, [data.materials, quote.lines]);
 
   const persist = async (next: StudioData, success: string) => {
+    if (saveInFlight.current) {
+      setError('Please wait for the current Supabase save to finish.');
+      return;
+    }
     const previous = data;
+    saveInFlight.current = true;
     setData(next); setSaving(true); setSaveState('saving'); setError('');
     try {
       const response = await fetch('/api/studio', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(next),
+        body: JSON.stringify({ data: next, expectedUpdatedAt: databaseRevision }),
       });
-      const payload = await response.json() as { error?: string };
+      const payload = await response.json() as { error?: string; updatedAt?: string };
       if (!response.ok) throw new Error(payload.error || 'The database save failed.');
+      setDatabaseRevision(payload.updatedAt ?? null);
       setMessage(`${success} Saved to Supabase.`);
       setSaveState('saved');
     } catch (caught) {
@@ -161,7 +172,7 @@ export default function StudioClient() {
       setError(`${caught instanceof Error ? caught.message : 'The database save failed.'} No records were changed.`);
       setSaveState('error');
     }
-    finally { setSaving(false); }
+    finally { saveInFlight.current = false; setSaving(false); }
   };
   const totals = useMemo(() => calculateTotals(quote), [quote]);
   const stockValue = data.inventory.reduce((sum, item) => sum + item.stemsRemaining * item.costPerStem, 0);

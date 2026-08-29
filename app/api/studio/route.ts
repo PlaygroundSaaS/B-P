@@ -52,14 +52,30 @@ export async function PUT(request: Request) {
     if (!supabase) {
       return NextResponse.json({ error: 'Supabase server access is not configured.' }, { status: 503 });
     }
-    const incoming = reviveData(await request.json());
+    const body = await request.json() as { data?: unknown; expectedUpdatedAt?: unknown };
+    const incoming = reviveData(body?.data ?? body);
+    const expectedUpdatedAt = typeof body?.expectedUpdatedAt === 'string' ? body.expectedUpdatedAt : null;
     const updatedAt = new Date().toISOString();
-    const { error } = await supabase.from('studio_app_state').upsert({
-      workspace_key: WORKSPACE_KEY,
-      data: incoming,
-      updated_at: updatedAt,
-    }, { onConflict: 'workspace_key' });
-    if (error) throw error;
+    if (expectedUpdatedAt) {
+      const { data, error } = await supabase
+        .from('studio_app_state')
+        .update({ data: incoming, updated_at: updatedAt })
+        .eq('workspace_key', WORKSPACE_KEY)
+        .eq('updated_at', expectedUpdatedAt)
+        .select('updated_at')
+        .maybeSingle();
+      if (error) throw error;
+      if (!data) {
+        return NextResponse.json({ error: 'The Studio changed in another tab or device. Refresh before saving again.' }, { status: 409 });
+      }
+    } else {
+      const { error } = await supabase.from('studio_app_state').upsert({
+        workspace_key: WORKSPACE_KEY,
+        data: incoming,
+        updated_at: updatedAt,
+      }, { onConflict: 'workspace_key' });
+      if (error) throw error;
+    }
     return NextResponse.json({ data: incoming, updatedAt });
   } catch (error) {
     console.error('[studio] database save failed', error);
