@@ -6,11 +6,12 @@ import { hasStudioSession } from '@/lib/studio-auth';
 export const runtime = 'nodejs';
 
 const WORKSPACE_KEY = 'bramble-petal-main';
+const STUDIO_SUPABASE_URL = 'https://ummnjohbbphzbshfbpgq.supabase.co';
 
 function createStudioDatabaseClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) return null;
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || STUDIO_SUPABASE_URL;
+  const key = (process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY)?.trim();
+  if (!key) return null;
   return createClient(url, key, {
     auth: { autoRefreshToken: false, persistSession: false, detectSessionInUrl: false },
   });
@@ -24,7 +25,8 @@ export async function GET() {
   try {
     const supabase = createStudioDatabaseClient();
     if (!supabase) {
-      return NextResponse.json({ error: 'Supabase server access is not configured.' }, { status: 503 });
+      console.error('[studio] Vercel Production is missing SUPABASE_SECRET_KEY');
+      return NextResponse.json({ error: 'The Studio database key is missing from Vercel Production.' }, { status: 503 });
     }
     const { data, error } = await supabase
       .from('studio_app_state')
@@ -50,7 +52,8 @@ export async function PUT(request: Request) {
   try {
     const supabase = createStudioDatabaseClient();
     if (!supabase) {
-      return NextResponse.json({ error: 'Supabase server access is not configured.' }, { status: 503 });
+      console.error('[studio] Vercel Production is missing SUPABASE_SECRET_KEY');
+      return NextResponse.json({ error: 'The Studio database key is missing from Vercel Production.' }, { status: 503 });
     }
     const body = await request.json() as { data?: unknown; expectedUpdatedAt?: unknown };
     const incoming = reviveData(body?.data ?? body);
