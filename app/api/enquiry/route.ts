@@ -18,6 +18,9 @@ export async function POST(request: Request) {
   const name = text(body.name, 120);
   const email = text(body.email, 200).toLowerCase();
   const occasion = text(body.occasion, 120);
+  const phone = text(body.phone, 80);
+  const eventDate = text(body.eventDate, 30);
+  const location = text(body.location, 300);
   const message = text(body.message, 4000);
 
   if (!name || !email || !occasion || !message || !emailPattern.test(email)) {
@@ -31,7 +34,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'The enquiry service is not ready yet. Please email info@bramblesandpetals.co.uk directly.' }, { status: 503 });
   }
 
-  const html = `<div style="font-family:Arial,sans-serif;color:#333;line-height:1.6"><h1 style="font-size:22px">New website enquiry</h1><p><strong>Name:</strong> ${escapeHtml(name)}<br><strong>Email:</strong> ${escapeHtml(email)}<br><strong>Occasion:</strong> ${escapeHtml(occasion)}</p><p><strong>Message:</strong><br>${escapeHtml(message).replace(/\n/g, '<br>')}</p></div>`;
+  const optionalDetails = [
+    phone ? `<strong>Phone:</strong> ${escapeHtml(phone)}` : '',
+    eventDate ? `<strong>Event / delivery date:</strong> ${escapeHtml(eventDate)}` : '',
+    location ? `<strong>Venue / area:</strong> ${escapeHtml(location)}` : '',
+  ].filter(Boolean).join('<br>');
+  const html = `<div style="font-family:Arial,sans-serif;color:#333;line-height:1.6"><h1 style="font-size:22px">New website enquiry</h1><p><strong>Name:</strong> ${escapeHtml(name)}<br><strong>Email:</strong> ${escapeHtml(email)}<br><strong>Occasion:</strong> ${escapeHtml(occasion)}${optionalDetails ? `<br>${optionalDetails}` : ''}</p><p><strong>Message:</strong><br>${escapeHtml(message).replace(/\n/g, '<br>')}</p></div>`;
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
@@ -45,4 +53,3 @@ export async function POST(request: Request) {
 
   return NextResponse.json({ message: 'Thank you — your enquiry has been sent. We’ll be in touch soon.' });
 }
-

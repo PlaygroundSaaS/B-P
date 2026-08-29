@@ -36,7 +36,7 @@ export default function StudioLoginForm() {
       <p className="login-intro">Sign in to manage your flowers, plans and clients.</p>
       <label>Username<input value={username} onChange={event => setUsername(event.target.value)} autoComplete="username" required /></label>
       <label>Password<input value={password} onChange={event => setPassword(event.target.value)} type="password" autoComplete="current-password" required /></label>
-      <button className="button" disabled={submitting}>{submitting ? 'Signing in…' : 'Sign in'}</button>
+      <button type="submit" className="button" disabled={submitting}>{submitting ? 'Signing in…' : 'Sign in'}</button>
       {error && <p className="form-error" role="alert">{error}</p>}
     </form>
   </main>;
