@@ -6,6 +6,7 @@ import type { StudioData } from '@/lib/types';
 import { MAX_INVOICE_BYTES } from '@/lib/supplier-invoices';
 import type { InvoiceStockUnit, SupplierInvoiceDraft, SupplierInvoiceLine, SupplierInvoiceRecord } from '@/lib/supplier-invoices';
 import { validateSupplierInvoice } from '@/lib/supplier-invoice-validation';
+import SupplierInvoiceDetail from './supplier-invoice-detail';
 import styles from './supplier-invoice-import.module.css';
 
 type Props = {
@@ -69,6 +70,8 @@ export default function SupplierInvoiceImport({ disabled, onImporting, onImporte
   const [invoices, setInvoices] = useState<SupplierInvoiceRecord[]>([]);
   const [historyLoading, setHistoryLoading] = useState(true);
   const [historyError, setHistoryError] = useState('');
+  const [invoiceLoadError, setInvoiceLoadError] = useState('');
+  const [openingInvoiceId, setOpeningInvoiceId] = useState('');
   const [historySearch, setHistorySearch] = useState('');
   const [hasMore, setHasMore] = useState(false);
   const [nextOffset, setNextOffset] = useState<number | null>(null);
@@ -81,6 +84,11 @@ export default function SupplierInvoiceImport({ disabled, onImporting, onImporte
   const [message, setMessage] = useState('');
   const operationRef = useRef<Operation>('');
   const selectionEpoch = useRef(0);
+  const detailHeading = useRef<HTMLHeadingElement>(null);
+  const loadErrorNotice = useRef<HTMLParagraphElement>(null);
+  const library = useRef<HTMLDetailsElement>(null);
+  const invoiceButtons = useRef(new Map<string, HTMLButtonElement>());
+  const returnToInvoice = useRef<string | null>(null);
   const mounted = useRef(true);
   const callbackRef = useRef(onImporting);
   callbackRef.current = onImporting;
@@ -118,6 +126,41 @@ export default function SupplierInvoiceImport({ disabled, onImporting, onImporte
     url.searchParams.set('supplierInvoice', invoice.id);
     window.history.replaceState(window.history.state, '', url);
   };
+
+  useEffect(() => {
+    if (selected) {
+      detailHeading.current?.focus({ preventScroll: true });
+      detailHeading.current?.scrollIntoView({ block: 'start', behavior: 'instant' });
+    } else if (returnToInvoice.current) {
+      if (library.current) library.current.open = true;
+      const target = invoiceButtons.current.get(returnToInvoice.current) ?? library.current?.querySelector('summary');
+      target?.focus({ preventScroll: true });
+      target?.scrollIntoView({ block: 'center', behavior: 'instant' });
+      returnToInvoice.current = null;
+    }
+  }, [selected?.id, selected?.status]);
+
+  useEffect(() => {
+    if (!invoiceLoadError) return;
+    loadErrorNotice.current?.focus({ preventScroll: true });
+    loadErrorNotice.current?.scrollIntoView({ block: 'nearest', behavior: 'instant' });
+  }, [invoiceLoadError]);
+
+  function closeInvoice() {
+    if (locked || !canLeaveDraft()) return;
+    returnToInvoice.current = selected?.id ?? null;
+    selectionEpoch.current += 1;
+    setSelected(null);
+    setDraft(null);
+    setDirty(false);
+    setReviewed(false);
+    setError('');
+    setMessage('');
+    setInvoiceLoadError('');
+    const url = new URL(window.location.href);
+    url.searchParams.delete('supplierInvoice');
+    window.history.replaceState(window.history.state, '', url);
+  }
 
   useEffect(() => {
     mounted.current = true;
@@ -187,10 +230,14 @@ export default function SupplierInvoiceImport({ disabled, onImporting, onImporte
   async function openInvoice(invoiceId: string) {
     if (!canLeaveDraft() || !begin('load')) return;
     selectionEpoch.current += 1;
+    setOpeningInvoiceId(invoiceId);
+    setInvoiceLoadError('');
     try {
       const payload = await request<{ invoice: SupplierInvoiceRecord }>(`${API}/${encodeURIComponent(invoiceId)}`);
       if (mounted.current) select(payload.invoice);
-    } catch (reason) { showError(reason); } finally { finish(); }
+    } catch (reason) {
+      if (mounted.current) setInvoiceLoadError(reason instanceof Error ? reason.message : 'This invoice could not be opened. Please try again.');
+    } finally { if (mounted.current) setOpeningInvoiceId(''); finish(); }
   }
 
   async function upload(event: ChangeEvent<HTMLInputElement>) {
@@ -244,11 +291,27 @@ export default function SupplierInvoiceImport({ disabled, onImporting, onImporte
       });
       onImported(payload.data, payload.updatedAt);
       if (mounted.current) {
-        select({ ...selected, draft, status: 'imported', imported_at: payload.updatedAt });
+        if (payload.alreadyImported) {
+          // Another tab may have imported a different review. Never label our local draft as the saved purchase.
+          select({ ...selected, draft: null, status: 'imported', imported_at: payload.updatedAt });
+          const saved = await request<{ invoice: SupplierInvoiceRecord }>(`${API}/${encodeURIComponent(selected.id)}`);
+          if (!mounted.current) return;
+          select(saved.invoice);
+        } else {
+          select({ ...selected, draft, status: 'imported', imported_at: payload.updatedAt });
+        }
         setMessage(payload.alreadyImported ? 'This invoice was already imported. No duplicate stock was added.' : 'Delivery added to inventory and saved to the database. Existing stock and its costs have been kept separately.');
       }
     } catch (reason) { showError(reason); } finally { finish(); }
   }
+
+  if (selected?.status === 'imported') return (
+    <section className={styles.root} aria-label="Supplier invoice breakdown">
+      {error && <p className={styles.error} role="alert">{error} Stock was already imported; return to the library and reopen the invoice to load its saved breakdown.</p>}
+      {message && <p className={styles.success} role="status">{message}</p>}
+      <SupplierInvoiceDetail invoice={selected} onBack={closeInvoice} titleRef={detailHeading} loading={operation !== ''} />
+    </section>
+  );
 
   return (
     <section className={styles.root} aria-labelledby={`${inputId}-heading`}>
@@ -272,12 +335,12 @@ export default function SupplierInvoiceImport({ disabled, onImporting, onImporte
       {selected && (
         <div className={styles.review}>
           <div className={styles.reviewHeading}>
-            <div><span className={styles.badge}>{statusLabel[selected.status]}</span><h4>{selected.status === 'imported' ? 'Delivery record' : 'Review the invoice'}</h4><p className={styles.muted}>{selected.filename}</p></div>
+            <div><span className={styles.badge}>{statusLabel[selected.status]}</span><h4 ref={detailHeading} tabIndex={-1}>Review the invoice</h4><p className={styles.muted}>{selected.filename}</p></div>
+            <button type="button" className={styles.secondary} disabled={locked} onClick={closeInvoice}>Back to invoice library</button>
             <a className={styles.secondary} href={`${API}/${encodeURIComponent(selected.id)}/image`} target="_blank" rel="noopener noreferrer">Open original photo ↗</a>
           </div>
           {selected.status === 'processing' && <div className={styles.notice}><p>The invoice is still being read. Inventory has not changed.</p><button type="button" disabled={locked} onClick={() => openInvoice(selected.id)}>Check reading status</button></div>}
           {selected.status === 'failed' && <div className={styles.error}><p>{selected.error_message || 'This invoice could not be read.'}</p><p>No inventory was changed. Check the photo is clear and complete, then upload it again. If the message mentions setup or a key, that connection must be configured first.</p></div>}
-          {selected.status === 'imported' && <p className={styles.success}>This delivery has been added. The record is read-only to prevent accidental duplicate stock.</p>}
           {draft && (
             <>
               <fieldset className={styles.fields} disabled={locked || !editable}>
@@ -367,10 +430,11 @@ export default function SupplierInvoiceImport({ disabled, onImporting, onImporte
         </div>
       )}
 
-      <details className={styles.history} open>
+      <details ref={library} className={styles.history} open>
         <summary>Supplier invoice library{invoices.length > 0 ? ` (${invoices.length}${hasMore ? '+' : ''})` : ''}</summary>
-        <div className={styles.historyHeading}><p className={styles.muted}>Invoices are grouped by supplier. Open one to see every line, the company details and the original photo.</p><button type="button" className={styles.secondary} disabled={locked || historyLoading} onClick={() => refreshHistory()}>Refresh</button></div>
+        <div className={styles.historyHeading}><p className={styles.muted}>Choose an invoice to see its itemised breakdown, original quantities and prices. Saved purchase records remain here after stock is used or removed.</p><button type="button" className={styles.secondary} disabled={locked || historyLoading} onClick={() => refreshHistory()}>Refresh</button></div>
         <label className={styles.librarySearch}>Find a supplier or invoice<input type="search" value={historySearch} onChange={event => setHistorySearch(event.target.value)} placeholder="Supplier, invoice number or account number" /></label>
+        {invoiceLoadError && <p ref={loadErrorNotice} tabIndex={-1} className={styles.error} role="alert">{invoiceLoadError} The saved invoice and stock have not changed.</p>}
         {hasMore && <p className={styles.costNote}>Showing {invoices.length} loaded invoices. Load older invoices below to include them in searches, counts and supplier totals.</p>}
         {historyLoading && <p role="status">Loading supplier invoices…</p>}
         {historyError && <p className={styles.error} role="alert">{historyError}</p>}
@@ -388,7 +452,7 @@ export default function SupplierInvoiceImport({ disabled, onImporting, onImporte
                 </div>
                 {details && <details className={styles.supplierContact}><summary>Company details from latest available invoice</summary><dl>{details.accountNumber && <div><dt>Account</dt><dd>{details.accountNumber}</dd></div>}{details.vatNumber && <div><dt>VAT number</dt><dd>{details.vatNumber}</dd></div>}{details.email && <div><dt>Email</dt><dd>{details.email}</dd></div>}{details.phone && <div><dt>Phone</dt><dd>{details.phone}</dd></div>}{details.address && <div className={styles.fullWidth}><dt>Address</dt><dd>{details.address}</dd></div>}</dl></details>}
                 <div className={styles.historyList}>
-                  {group.matches.map(invoice => <button type="button" key={invoice.id} className={`${styles.historyItem} ${selected?.id === invoice.id ? styles.selected : ''}`} disabled={locked} onClick={() => openInvoice(invoice.id)} aria-pressed={selected?.id === invoice.id}><span><strong>{invoice.draft?.invoiceNumber ? `Invoice ${invoice.draft.invoiceNumber}` : invoice.filename}</strong><small>{invoice.draft?.invoiceDate ? `Dated ${new Date(`${invoice.draft.invoiceDate}T12:00:00`).toLocaleDateString('en-GB')}` : `Uploaded ${new Date(invoice.created_at).toLocaleDateString('en-GB')}`} · {invoice.draft?.lines.length ?? 0} line{invoice.draft?.lines.length === 1 ? '' : 's'}</small></span><span className={styles.invoiceMeta}><strong>{invoice.draft?.currency === 'GBP' ? gbp(invoice.draft.total) : invoice.draft?.currency || 'Total not read'}</strong><span className={styles.badge}>{statusLabel[invoice.status]}</span></span></button>)}
+                  {group.matches.map(invoice => <button type="button" key={invoice.id} ref={element => { if (element) invoiceButtons.current.set(invoice.id, element); else invoiceButtons.current.delete(invoice.id); }} className={`${styles.historyItem} ${selected?.id === invoice.id ? styles.selected : ''}`} disabled={locked} onClick={() => openInvoice(invoice.id)}><span><strong>{invoice.draft?.invoiceNumber ? `Invoice ${invoice.draft.invoiceNumber}` : invoice.filename}</strong><small>{invoice.draft?.invoiceDate ? `Dated ${new Date(`${invoice.draft.invoiceDate}T12:00:00`).toLocaleDateString('en-GB')}` : `Uploaded ${new Date(invoice.created_at).toLocaleDateString('en-GB')}`} · {invoice.draft?.lines.length ?? 0} line{invoice.draft?.lines.length === 1 ? '' : 's'}</small><span className={styles.viewInvoice}>{openingInvoiceId === invoice.id ? 'Opening invoice…' : invoice.status === 'imported' ? 'View itemised invoice' : invoice.status === 'review' ? 'Open invoice review' : 'View invoice status'} <span aria-hidden="true">→</span></span></span><span className={styles.invoiceMeta}><strong>{invoice.draft?.currency === 'GBP' ? gbp(invoice.draft.total) : invoice.draft?.currency || 'Total not read'}</strong><span className={styles.badge}>{statusLabel[invoice.status]}</span></span></button>)}
                 </div>
               </section>
             );

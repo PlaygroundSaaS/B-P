@@ -131,9 +131,45 @@
 .root .historyItem { width: 100%; justify-content: space-between; text-align: left; gap: 1rem; border-color: var(--border); }
 .historyItem > span:first-child { display: grid; gap: 0.15rem; min-width: 0; overflow-wrap: anywhere; }
 .root .historyItem.selected { border-color: #75835b; background: #edf0e6; }
+.root .viewInvoice { margin-top: 0.3rem; color: #394c2a; font-size: 0.84rem; text-decoration: underline; text-underline-offset: 3px; }
+.root .invoiceDetail { display: grid; gap: 1.2rem; min-width: 0; }
+.invoiceDetail > button { justify-self: start; }
+.detailHeader { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; }
+.root .detailHeader h3 { margin: 0.4rem 0; font-size: clamp(1.65rem, 2.5vw, 2.15rem); overflow-wrap: anywhere; scroll-margin-top: 1.5rem; }
+.root .detailSupplier { font-size: 1.1rem; overflow-wrap: anywhere; }
+.root .invoiceDetail > .notice { margin-top: 0 !important; }
+.detailFacts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin: 0; padding: 1rem; border: 1px solid var(--border); border-radius: 8px; background: var(--paper); }
+.detailFacts dt, .lineNumbers dt, .detailTotals dt { font-size: 0.76rem; color: #606553; }
+.detailFacts dd, .lineNumbers dd, .detailTotals dd { margin: 0.15rem 0 0; overflow-wrap: anywhere; white-space: pre-line; }
+.detailItemsHeading { margin-top: 0.5rem; }
+.root .detailItemsHeading h4 { display: flex; align-items: center; gap: 0.6rem; }
+.root .detailLines { display: grid; gap: 0.7rem; padding: 0; margin: 0; list-style: none; }
+.root .detailLine { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.8fr); gap: 0.8rem 1.25rem; margin: 0; padding: 1.15rem; border: 1px solid var(--border); border-radius: 10px; background: var(--paper); }
+.lineIdentity { min-width: 0; }
+.root .lineIdentity h5 { margin: 0 0 0.4rem; font: inherit; font-weight: 700; line-height: 1.4; overflow-wrap: anywhere; }
+.lineNumber { margin-right: 0.6rem; font-size: 0.7rem; color: #6c755d; font-variant-numeric: tabular-nums; }
+.lineNumbers { display: grid; grid-template-columns: 0.65fr 0.65fr 1fr 1.1fr 1.1fr; gap: 0.65rem; margin: 0; }
+.lineNumbers dd { font-weight: 600; font-variant-numeric: tabular-nums; }
+.lineNumbers small { display: block; }
+.lineAmount dd { color: #35442a; }
+.root .nonStockNote { margin-top: 0.4rem; color: #66695d; font-size: 0.75rem; }
+.root .detailLineNote { grid-column: 1 / -1; padding-top: 0.65rem; border-top: 1px solid #eee9df; color: #616657; font-size: 0.8rem; white-space: pre-line; overflow-wrap: anywhere; }
+.detailFooter { display: grid; grid-template-columns: minmax(0, 1fr) minmax(270px, 1fr); align-items: start; gap: 1.5rem; }
+.detailTotals { margin: 0; padding: 1rem; background: #e7e9df; border: 1px solid #cbd1bd; border-radius: 8px; }
+.detailTotals > div { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; padding: 0.35rem 0; }
+.detailTotals dd { flex-shrink: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+.detailTotals .grandTotal { margin-top: 0.5rem; padding-top: 0.8rem; border-top: 1px solid #b6bea6; }
+.grandTotal dt { font-size: 0.9rem; font-weight: 700; color: var(--ink); }
+.grandTotal dd { font-size: 1.35rem; }
+.originalReference { padding: 1rem 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.originalReference summary { cursor: pointer; font-size: 0.84rem; }
+.originalReference p { margin: 0.7rem 0 !important; overflow-wrap: anywhere; }
 @media (max-width: 960px) {
   .intro { grid-template-columns: 1fr; gap: 1rem; }
   .headerGrid, .lineGrid, .totalsGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .root .detailLine { grid-template-columns: 1fr; }
+  .detailFacts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .detailFooter { grid-template-columns: 1fr; }
 }
 @media (max-width: 520px) {
   .root { padding: 1rem; border-radius: 12px; }
@@ -151,6 +187,10 @@
   .reviewHeading > a { width: 100% !important; }
   .actions { align-items: stretch; flex-direction: column; }
   .actions button { width: 100%; }
+  .detailFacts { grid-template-columns: 1fr; }
+  .lineNumbers { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; }
+  .lineAmount { grid-column: 1 / -1; border-top: 1px solid var(--border); padding-top: 0.65rem; }
+  .root .detailLine { padding: 0.9rem; }
 }
 @media (prefers-reduced-motion: reduce) {
   .root *, .root *::before, .root *::after { scroll-behavior: auto; transition: none; }
