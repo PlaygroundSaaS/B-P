@@ -1,9 +1,12 @@
 'use client';
 
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { calculateTotals, DEFAULT_SETTINGS, money } from '@/lib/pricing';
 import type { Customer, InventoryItem, Material, PlanMaterial, PlanReferenceImage, Quote, QuoteLine, StudioData, WeddingArrangement, WeddingBuild, WeddingInventoryFlower, WastageRecord, WeddingPlan } from '@/lib/types';
+
+const SupplierInvoiceImport = dynamic(() => import('./supplier-invoice-import'));
 
 const id = () => globalThis.crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2);
 const initialData = (): StudioData => ({ version: 1, inventory: [], wastage: [], materials: [], customers: [], quotes: [], jobs: [], plans: [], weddingBuilds: [], settings: DEFAULT_SETTINGS });
@@ -41,6 +44,8 @@ export default function StudioClient() {
   const [clientType, setClientType] = useState<'Wedding' | 'Funeral' | 'Corporate'>('Wedding');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [invoiceBusy, setInvoiceBusy] = useState(false);
+  const invoiceInFlight = useRef(false);
   const [showInventoryForm, setShowInventoryForm] = useState(false);
   const [planReferences, setPlanReferences] = useState<PlanReferenceImage[]>([]);
   const [planMaterials, setPlanMaterials] = useState<PlanMaterial[]>([]);
@@ -65,11 +70,15 @@ export default function StudioClient() {
   const saveInFlight = useRef(false);
 
   const signOut = async () => {
+    if (invoiceInFlight.current) return;
     await fetch('/api/studio/logout', { method: 'POST' });
     globalThis.location.assign('/studio');
   };
 
   useEffect(() => {
+    if (new URL(globalThis.location.href).searchParams.has('supplierInvoice')) {
+      setScreen('business'); setTab('inventory');
+    }
     const saved = globalThis.localStorage.getItem('bramble-petal-studio-data');
     let localData: StudioData | null = null;
     if (saved) {
@@ -102,7 +111,9 @@ export default function StudioClient() {
           setQuote(blankQuote(databaseData.settings));
           setDatabaseRevision(payload.updatedAt ?? null);
         }
-        globalThis.localStorage.removeItem('bramble-petal-studio-data');
+        if (!localData || !hasStudioRecords(localData) || !hasStudioRecords(databaseData)) {
+          globalThis.localStorage.removeItem('bramble-petal-studio-data');
+        }
         setSaveState('saved');
       } catch (caught) {
         setSaveState('error');
@@ -149,7 +160,7 @@ export default function StudioClient() {
   }, [data.materials, quote.lines]);
 
   const persist = async (next: StudioData, success: string) => {
-    if (saveInFlight.current) {
+    if (saveInFlight.current || invoiceInFlight.current) {
       setError('Please wait for the current Supabase save to finish.');
       return;
     }
@@ -371,7 +382,7 @@ export default function StudioClient() {
   if (loading) return <main className="loading">Preparing your Studio Hub…</main>;
   if (screen === 'choose') return <main className="choose-screen"><p className="eyebrow">BRAMBLE &amp; PETAL</p><h1>Studio Hub</h1><p className="welcome-copy">Choose the space that suits this moment.</p><div className="choice-grid"><button type="button" className="choice-card" onClick={() => setScreen('business')}><span>FOR JADE &amp; THE TEAM</span><strong>Enter Business Side</strong><small>Inventory, quoting, jobs and client plans.</small></button><button type="button" className="choice-card" onClick={() => setScreen('client')}><span>FOR CONSULTATIONS</span><strong>Enter Client Planning Studio</strong><small>A customer-safe space for wedding, funeral and corporate planning.</small></button></div><p className={`studio-storage-note ${saveState}`}><span aria-hidden="true">●</span>{saveState === 'saved' ? 'Studio database connected' : saveState === 'error' ? 'Database connection needs attention — device backup active' : 'Connecting to the Studio database…'}</p></main>;
 
-  const nav = (name: typeof tab, label: string) => <button type="button" aria-current={tab === name ? 'page' : undefined} className={tab === name ? 'active' : ''} onClick={() => setTab(name)}>{label}</button>;
+  const nav = (name: typeof tab, label: string) => <button type="button" disabled={invoiceBusy} aria-current={tab === name ? 'page' : undefined} className={tab === name ? 'active' : ''} onClick={() => setTab(name)}>{label}</button>;
   const selectedCustomer = selectedCustomerId ? data.customers.find(customer => customer.id === selectedCustomerId) || null : null;
   const selectedCustomerPlans = selectedCustomer ? data.plans.filter(plan => plan.clientName.toLocaleLowerCase() === selectedCustomer.name.toLocaleLowerCase()) : [];
   const selectedCustomerJobs = selectedCustomer ? data.jobs.filter(job => job.clientName.toLocaleLowerCase() === selectedCustomer.name.toLocaleLowerCase()) : [];
@@ -414,6 +425,7 @@ export default function StudioClient() {
         </div>
       </>}
       {tab === 'inventory' && <>
+        <SupplierInvoiceImport disabled={loading || saving} onImporting={busy => { invoiceInFlight.current = busy; setInvoiceBusy(busy); }} onImported={(saved, revision) => { setData(normaliseData(saved)); setDatabaseRevision(revision); setSaveState('saved'); setError(''); }} />
         <div className="workspace-heading"><div><p className="eyebrow">FLOWER INVENTORY</p><h1>Inventory hub</h1></div><button type="button" className="button" onClick={() => setShowInventoryForm(show => !show)}>{showInventoryForm ? 'Close' : '+ Add flower'}</button></div>
         <section className="inventory-summary"><div><small>Total value (ex VAT)</small><strong>{money(stockValue)}</strong></div><div><small>VAT (20%)</small><strong>{money(stockValue * .2)}</strong></div><div><small>Total value (inc VAT)</small><strong>{money(stockValue * 1.2)}</strong></div></section>
         {showInventoryForm && <form className="panel-form inventory-form" onSubmit={addInventory}><label>Flower name<input name="name" required placeholder="e.g. White rose" /></label><label>Colour<input name="colour" placeholder="e.g. ivory" /></label><label>Cost per stem (£)<input name="cost" type="number" min="0" step="0.01" required /></label><label>Stems purchased<input name="stems" type="number" min="1" required /></label><button type="submit" className="button" disabled={saving}>Save flower</button></form>}

@@ -7,6 +7,11 @@ export interface InventoryItem {
   costPerStem: number;
   stemsPurchased: number;
   stemsRemaining: number;
+  stockUnit?: 'stem' | 'bunch' | 'unit';
+  supplierInvoiceId?: string;
+  supplier?: string;
+  supplierCode?: string;
+  receivedAt?: string;
 }
 
 export interface WastageRecord {
@@ -192,4 +197,3 @@ export interface StudioData {
   weddingBuilds: WeddingBuild[];
   settings: Settings;
 }
-

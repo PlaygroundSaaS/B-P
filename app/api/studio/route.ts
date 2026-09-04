@@ -1,21 +1,10 @@
-import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import { blankData, reviveData } from '@/lib/studio-data';
 import { hasStudioSession } from '@/lib/studio-auth';
+import { createStudioDatabaseClient, STUDIO_WORKSPACE as WORKSPACE_KEY } from '@/lib/studio-database';
 
 export const runtime = 'nodejs';
 
-const WORKSPACE_KEY = 'bramble-petal-main';
-const STUDIO_SUPABASE_URL = 'https://ummnjohbbphzbshfbpgq.supabase.co';
-
-function createStudioDatabaseClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || STUDIO_SUPABASE_URL;
-  const key = (process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY)?.trim();
-  if (!key) return null;
-  return createClient(url, key, {
-    auth: { autoRefreshToken: false, persistSession: false, detectSessionInUrl: false },
-  });
-}
 
 export async function GET() {
   if (!await hasStudioSession()) {
@@ -72,11 +61,14 @@ export async function PUT(request: Request) {
         return NextResponse.json({ error: 'The Studio changed in another tab or device. Refresh before saving again.' }, { status: 409 });
       }
     } else {
-      const { error } = await supabase.from('studio_app_state').upsert({
+      const { error } = await supabase.from('studio_app_state').insert({
         workspace_key: WORKSPACE_KEY,
         data: incoming,
         updated_at: updatedAt,
-      }, { onConflict: 'workspace_key' });
+      });
+      if (error?.code === '23505') {
+        return NextResponse.json({ error: 'The Studio already contains saved records. Refresh before saving again.' }, { status: 409 });
+      }
       if (error) throw error;
     }
     return NextResponse.json({ data: incoming, updatedAt });
