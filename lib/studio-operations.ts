@@ -1,6 +1,11 @@
 import { calculateTotals, round2 } from './pricing';
 import type { Quote, StudioData, WeddingBuild } from './types';
 
+// Older briefs may contain surrounding spaces that the client book already trimmed.
+export function clientNameKey(name: string): string {
+  return name.trim().toLocaleLowerCase();
+}
+
 export function validateQuote(quote: Quote): string | null {
   if (!quote.clientName.trim()) return 'Add the client name before saving.';
   if (!quote.lines.length) return 'Add at least one flower or material.';

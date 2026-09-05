@@ -14,7 +14,7 @@ function load(path, mocks = {}) {
   return module.exports;
 }
 const { emptyStudio } = load('lib/pricing.ts');
-const { saveQuoteToData, winQuote, weddingTotals } = load('lib/studio-operations.ts');
+const { clientNameKey, saveQuoteToData, winQuote, weddingTotals } = load('lib/studio-operations.ts');
 const { isStudioData } = load('lib/studio-validation.ts');
 const { readJsonObject, requireSameOrigin } = load('lib/request-body.ts');
 const quote = () => ({ id:'quote-1', clientName:'Sample Client', occasion:'Bouquet', eventDate:'', contact:'', lines:[{id:'line-1',inventoryId:'rose',name:'Rose',category:'stem',quantity:4,unitCost:2}], labourHours:1,labourRate:25,wastagePercent:10,markupPercent:250,deliveryFee:5,discount:0,vatApplies:true,vatRate:20,notes:'',createdAt:'2026-09-05T10:00:00Z' });
@@ -104,4 +104,11 @@ test('origin validation uses incoming host behind the Next server adapter',()=>{
 test('login rejects a null body without attempting authentication',async()=>{
  const api=load('app/api/studio/login/route.ts',{'@/lib/studio-auth':{studioLoginConfigured:()=>{throw Error('must not authenticate');}}});
  const response=await api.POST(new Request('https://example.test/api/studio/login',{method:'POST',headers:{'content-type':'application/json'},body:'null'}));assert.equal(response.status,400);
+});
+
+ test('client profiles match older briefs with surrounding whitespace and case differences', () => {
+  const client = {name: 'Sample Client'};
+  const plans = [{clientName: ' Sample Client '}, {clientName: 'sample client'}, {clientName: 'Another Client'}];
+  assert.equal(plans.filter(plan => clientNameKey(plan.clientName) === clientNameKey(client.name)).length, 2);
+  assert.notEqual(clientNameKey('Ann'), clientNameKey('Anne'));
 });
