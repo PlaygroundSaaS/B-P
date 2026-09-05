@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { readJsonObject, requireSameOrigin, RequestError } from '@/lib/request-body';
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -11,8 +12,9 @@ function escapeHtml(value: string) {
 }
 
 export async function POST(request: Request) {
-  const body = await request.json().catch(() => null) as Record<string, unknown> | null;
-  if (!body) return NextResponse.json({ error: 'Please complete the enquiry form.' }, { status: 400 });
+  let body: Record<string, unknown>;
+  try { requireSameOrigin(request); body = await readJsonObject(request); }
+  catch (error) { return NextResponse.json({ error: error instanceof Error ? error.message : 'Please complete the enquiry form.' }, { status: error instanceof RequestError ? error.status : 400 }); }
   if (text(body.company, 200)) return NextResponse.json({ message: 'Thank you — your enquiry has been sent.' });
 
   const name = text(body.name, 120);
@@ -23,7 +25,7 @@ export async function POST(request: Request) {
   const location = text(body.location, 300);
   const message = text(body.message, 4000);
 
-  if (!name || !email || !occasion || !message || !emailPattern.test(email)) {
+  if (!name || !email || !['Wedding', 'Funeral flowers', 'Corporate event', 'Everyday flowers', 'Other'].includes(occasion) || !message || !emailPattern.test(email)) {
     return NextResponse.json({ error: 'Please enter your name, a valid email address and your enquiry.' }, { status: 400 });
   }
 
@@ -40,16 +42,21 @@ export async function POST(request: Request) {
     location ? `<strong>Venue / area:</strong> ${escapeHtml(location)}` : '',
   ].filter(Boolean).join('<br>');
   const html = `<div style="font-family:Arial,sans-serif;color:#333;line-height:1.6"><h1 style="font-size:22px">New website enquiry</h1><p><strong>Name:</strong> ${escapeHtml(name)}<br><strong>Email:</strong> ${escapeHtml(email)}<br><strong>Occasion:</strong> ${escapeHtml(occasion)}${optionalDetails ? `<br>${optionalDetails}` : ''}</p><p><strong>Message:</strong><br>${escapeHtml(message).replace(/\n/g, '<br>')}</p></div>`;
-  const response = await fetch('https://api.resend.com/emails', {
+  let response: Response;
+  try { response = await fetch('https://api.resend.com/emails', {
+    signal: AbortSignal.timeout(15000),
     method: 'POST',
     headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ from, to: [to], reply_to: email, subject: `Website enquiry — ${occasion} — ${name}`, html }),
-  });
+  }); } catch {
+    return NextResponse.json({ error: 'We could not confirm delivery. Please email info@bramblesandpetals.co.uk if you need help.' }, { status: 502 });
+  }
 
   if (!response.ok) {
-    console.error('Resend enquiry send failed', await response.text());
+    console.error('Enquiry delivery failed', response.status);
     return NextResponse.json({ error: 'We could not send your enquiry just now. Please try again or email us directly.' }, { status: 502 });
   }
 
   return NextResponse.json({ message: 'Thank you — your enquiry has been sent. We’ll be in touch soon.' });
 }
+

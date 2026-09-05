@@ -22,6 +22,7 @@ export interface WastageRecord {
   unitCost: number;
   reason?: string;
   recordedAt: string;
+  stockUnit?: 'stem' | 'bunch' | 'unit';
 }
 
 export interface Material {
@@ -41,6 +42,7 @@ export interface Customer {
 }
 
 export interface QuoteLine {
+  stockUnit?: 'stem' | 'bunch' | 'unit';
   id: string;
   inventoryId: string | null;
   name: string;
@@ -105,6 +107,7 @@ export interface WeddingPlan {
   status?: 'Enquiry' | 'Planning' | 'Proposal sent' | 'Booked';
   references?: PlanReferenceImage[];
   materialsNeeded?: PlanMaterial[];
+  setupOptions?: WeddingSetupOption[];
 }
 
 export interface PlanMaterial {
@@ -196,4 +199,15 @@ export interface StudioData {
   plans: WeddingPlan[];
   weddingBuilds: WeddingBuild[];
   settings: Settings;
+}
+
+
+export interface WeddingSetupOption {
+  id: string;
+  title: string;
+  description: string;
+  quantity: number;
+  unitPrice: number | null;
+  photoSrc: string;
+  selected: boolean;
 }

@@ -1,0 +1,2 @@
+'use client';
+export default function ErrorPage({ reset }: { reset: () => void }) { return <main className="login-screen"><section className="panel-form"><p className="eyebrow">BRAMBLE &amp; PETAL</p><h1>Let’s try again.</h1><p>This page could not finish loading. You can retry or return to the website.</p><button className="button" onClick={reset}>Try again</button><a className="studio-home-link" href="/">← Back to the website</a></section></main>; }

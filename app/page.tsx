@@ -1,6 +1,8 @@
 import Image from 'next/image';
 import EnquiryForm from './enquiry-form';
 import PublicHeader from './public-header';
+import EnquiryLink from './enquiry-link';
+import WeddingGallery from './wedding-gallery';
 import weddingStyles from './wedding-gallery.module.css';
 
 const weddingImages = [
@@ -30,8 +32,8 @@ export default function Home() {
   return (
     <div className="bp-site">
       <a className="bp-skip-link" href="#main-content">Skip to content</a>
-      <header className="bp-hero" id="top">
-        <PublicHeader />
+      <PublicHeader /><header className="bp-hero" id="top">
+        
         <div className="bp-hero-shade" />
         <div className="bp-hero-copy">
           <p className="bp-kicker bp-kicker--light">INDEPENDENT FLORAL STUDIO</p>
@@ -65,7 +67,7 @@ export default function Home() {
             <p>From one beautifully gathered bouquet to a complete event, the process stays personal, considered and clear.</p>
           </div>
           <div className="bp-service-list">
-            {services.map(service => <article key={service.title}><span>{service.number}</span><h3>{service.title}</h3><p>{service.copy}</p><a href="#enquire" aria-label={`Enquire about ${service.title.toLowerCase()}`}>Enquire <span aria-hidden="true">→</span></a></article>)}
+            {services.map(service => <article key={service.title}><span>{service.number}</span><h3>{service.title}</h3><p>{service.copy}</p><EnquiryLink occasion={service.title === 'Sympathy' ? 'Funeral flowers' : service.title === 'Corporate' ? 'Corporate event' : service.title === 'Bouquets' ? 'Everyday flowers' : 'Wedding'} aria-label={`Enquire about ${service.title.toLowerCase()}`}>Enquire <span aria-hidden="true">→</span></EnquiryLink></article>)}
           </div>
         </section>
 
@@ -97,15 +99,8 @@ export default function Home() {
             <div><p className="bp-kicker">WEDDING FLOWERS</p><h2 id="weddings-title">A day made<br /><em>beautifully yours.</em></h2></div>
             <p>From the flowers arriving to the final stems in place, a glimpse of the care behind our wedding designs.</p>
           </div>
-          <div className={weddingStyles.grid}>
-            {weddingImages.map(photo => (
-              <figure className={weddingStyles.photo} key={photo.src}>
-                <Image src={photo.src} alt={photo.alt} width={1536} height={2048} sizes="(max-width: 600px) calc(100vw - 48px), (max-width: 1020px) 43vw, (max-width: 1500px) 29vw, 428px" />
-                <figcaption>{photo.label}</figcaption>
-              </figure>
-            ))}
-          </div>
-          <div className={weddingStyles.action}><a className="bp-text-link" href="#enquire">Talk to us about your wedding <span aria-hidden="true">→</span></a></div>
+          <WeddingGallery images={weddingImages} />
+          <div className={weddingStyles.action}><EnquiryLink className="bp-text-link" occasion="Wedding">Talk to us about your wedding <span aria-hidden="true">→</span></EnquiryLink></div>
         </section>
 
         <section className="bp-sympathy" id="sympathy">
@@ -113,7 +108,7 @@ export default function Home() {
             <p className="bp-kicker">SYMPATHY FLOWERS</p>
             <h2>Flowers to remember,<br /><em>honour and celebrate.</em></h2>
             <p>At a difficult time, flowers can say what words cannot. We create personal tributes, sprays, wreaths and farewell arrangements with sensitivity and attention to meaningful detail.</p>
-            <a className="bp-text-link" href="#enquire">Arrange sympathy flowers <span aria-hidden="true">→</span></a>
+            <EnquiryLink className="bp-text-link" occasion="Funeral flowers">Arrange sympathy flowers <span aria-hidden="true">→</span></EnquiryLink>
           </div>
           <div className="bp-sympathy-images">
             <figure><Image src="/assets/sympathy-tribute.jpg" alt="A floral funeral tribute and letter arrangement" fill sizes="(max-width: 760px) 82vw, 32vw" /><figcaption>Personal farewell tributes</figcaption></figure>

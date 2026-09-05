@@ -11,6 +11,7 @@ import styles from './supplier-invoice-import.module.css';
 
 type Props = {
   disabled: boolean;
+  onDraftChange?: (dirty: boolean) => void;
   onImporting: (busy: boolean) => void;
   onImported: (data: StudioData, updatedAt: string) => void;
 };
@@ -65,7 +66,7 @@ async function preparePhoto(file: File): Promise<File> {
   }
 }
 
-export default function SupplierInvoiceImport({ disabled, onImporting, onImported }: Props) {
+export default function SupplierInvoiceImport({ disabled, onImporting, onImported, onDraftChange }: Props) {
   const inputId = useId();
   const [invoices, setInvoices] = useState<SupplierInvoiceRecord[]>([]);
   const [historyLoading, setHistoryLoading] = useState(true);
@@ -82,6 +83,7 @@ export default function SupplierInvoiceImport({ disabled, onImporting, onImporte
   const [operation, setOperation] = useState<Operation>('');
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  useEffect(() => { onDraftChange?.(dirty); }, [dirty, onDraftChange]);
   const operationRef = useRef<Operation>('');
   const selectionEpoch = useRef(0);
   const detailHeading = useRef<HTMLHeadingElement>(null);
@@ -463,3 +465,4 @@ export default function SupplierInvoiceImport({ disabled, onImporting, onImporte
     </section>
   );
 }
+

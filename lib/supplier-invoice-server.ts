@@ -1,3 +1,4 @@
+import { requireSameOrigin } from './request-body';
 import { NextResponse } from 'next/server';
 import { hasStudioSession } from '@/lib/studio-auth';
 import { createStudioDatabaseClient, STUDIO_WORKSPACE } from '@/lib/studio-database';
@@ -13,10 +14,7 @@ export class InvoiceError extends Error {
 }
 export async function invoiceAccess(request: Request) {
   if (!await hasStudioSession()) throw new InvoiceError('Please sign in to use supplier invoices.', 401);
-  const origin = request.headers.get('origin');
-  if ((origin && origin !== new URL(request.url).origin) || request.headers.get('sec-fetch-site') === 'cross-site') {
-    throw new InvoiceError('Please upload from your Studio page.', 403);
-  }
+  try { requireSameOrigin(request); } catch { throw new InvoiceError('Please upload from your Studio page.', 403); }
   const database = createStudioDatabaseClient();
   if (!database) throw new InvoiceError('The Supabase server key is missing from Vercel. No stock has been changed.', 503);
   return database;
@@ -86,3 +84,4 @@ export async function getInvoice(database: NonNullable<ReturnType<typeof createS
   if (!data) throw new InvoiceError('Invoice not found.', 404);
   return data;
 }
+

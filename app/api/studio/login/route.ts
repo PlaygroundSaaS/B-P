@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { readJsonObject, requireSameOrigin, RequestError } from '@/lib/request-body';
 import { createStudioSession, studioLoginConfigured, studioSessionCookie, validStudioCredentials } from '@/lib/studio-auth';
 
 export const runtime = 'nodejs';
@@ -6,8 +7,10 @@ export const runtime = 'nodejs';
 export async function POST(request: Request) {
   let body: { username?: unknown; password?: unknown };
   try {
-    body = await request.json();
-  } catch {
+    requireSameOrigin(request);
+    body = await readJsonObject(request, 8192);
+  } catch (error) {
+    if (error instanceof RequestError) return NextResponse.json({ error: error.message }, { status: error.status });
     return NextResponse.json({ error: 'Enter your username and password.' }, { status: 400 });
   }
 
@@ -21,7 +24,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'That username or password is not correct.' }, { status: 401 });
   }
 
-  const response = NextResponse.json({ ok: true });
+  const response = NextResponse.json({ ok: true }, { headers: { 'Cache-Control': 'private, no-store' } });
   response.cookies.set(studioSessionCookie(createStudioSession()));
   return response;
 }
+

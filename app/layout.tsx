@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import './enquiry-form.css';
 import './experience-refresh.css';
+import './site-audit.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.bramblesandpetals.co.uk'),
@@ -11,10 +12,11 @@ export const metadata: Metadata = {
     title: 'Bramble & Petal Florist Studio',
     description: 'Thoughtful, seasonal flowers for weddings, farewells, events and meaningful everyday moments.',
     type: 'website',
-    images: [{ url: '/images/hero.jpg', width: 1680, height: 945, alt: 'Bramble & Petal florist holding a bouquet in the flower studio' }],
+    images: [{ url: '/assets/hero.jpg', width: 1680, height: 945, alt: 'Bramble & Petal florist holding a bouquet in the flower studio' }],
   },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return <html lang="en"><body>{children}</body></html>;
 }
+

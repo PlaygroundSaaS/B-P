@@ -1,0 +1,1 @@
+export default function NotFound() { return <main className="login-screen"><section className="panel-form"><p className="eyebrow">BRAMBLE &amp; PETAL · 404</p><h1>A little off the path.</h1><p>This page could not be found. Let’s get you back to the flowers.</p><a className="button" href="/">Back to the website →</a></section></main>; }

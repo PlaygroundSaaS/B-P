@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 
 const occasionDetails: Record<string, { prompt: string; placeholder: string }> = {
   Wedding: {
@@ -29,6 +29,11 @@ export default function EnquiryForm() {
   const [occasion, setOccasion] = useState('Wedding');
   const [status, setStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  useEffect(() => {
+    const choose = (event: Event) => { const value = (event as CustomEvent<string>).detail; if (occasionDetails[value]) { setOccasion(value); setStatus(null); } };
+    window.addEventListener('enquiry-occasion', choose);
+    return () => window.removeEventListener('enquiry-occasion', choose);
+  }, []);
   const detail = occasionDetails[occasion] ?? occasionDetails.Other;
 
   async function sendEnquiry(event: FormEvent<HTMLFormElement>) {
@@ -59,7 +64,7 @@ export default function EnquiryForm() {
   }
 
   return <form className="bp-enquiry-form" onSubmit={sendEnquiry}>
-    <div className="bp-field bp-field-wide">
+    <fieldset className="enquiry-fields" disabled={submitting}><div className="bp-field bp-field-wide">
       <label htmlFor="enquiry-occasion">What are you planning?</label>
       <select id="enquiry-occasion" name="occasion" value={occasion} onChange={event => setOccasion(event.target.value)}>
         <option>Wedding</option>
@@ -71,15 +76,15 @@ export default function EnquiryForm() {
     </div>
     <div className="bp-field">
       <label htmlFor="enquiry-name">Your name</label>
-      <input id="enquiry-name" name="name" autoComplete="name" required />
+      <input id="enquiry-name" name="name" maxLength={120} autoComplete="name" required />
     </div>
     <div className="bp-field">
       <label htmlFor="enquiry-email">Email address</label>
-      <input id="enquiry-email" name="email" type="email" autoComplete="email" required />
+      <input id="enquiry-email" name="email" maxLength={200} type="email" autoComplete="email" required />
     </div>
     <div className="bp-field">
       <label htmlFor="enquiry-phone">Phone number <span>Optional</span></label>
-      <input id="enquiry-phone" name="phone" type="tel" autoComplete="tel" />
+      <input id="enquiry-phone" name="phone" maxLength={80} type="tel" autoComplete="tel" />
     </div>
     <div className="bp-field">
       <label htmlFor="enquiry-date">Event or delivery date <span>Optional</span></label>
@@ -87,17 +92,18 @@ export default function EnquiryForm() {
     </div>
     <div className="bp-field bp-field-wide">
       <label htmlFor="enquiry-location">Venue or delivery area <span>Optional</span></label>
-      <input id="enquiry-location" name="location" autoComplete="street-address" />
+      <input id="enquiry-location" name="location" maxLength={300} autoComplete="street-address" />
     </div>
     <div className="bp-field bp-field-wide">
       <label htmlFor="enquiry-message">{detail.prompt}</label>
-      <textarea id="enquiry-message" name="message" placeholder={detail.placeholder} required />
+      <textarea id="enquiry-message" name="message" maxLength={4000} placeholder={detail.placeholder} required />
     </div>
     <input className="landing-honeypot" name="company" tabIndex={-1} autoComplete="off" aria-hidden="true" />
     <div className="bp-form-action bp-field-wide">
       <button className="bp-button" type="submit" disabled={submitting}>{submitting ? 'Sending…' : 'Send your enquiry'}</button>
       <p>We usually reply within two working days.</p>
     </div>
+    </fieldset>
     {status && <div className={`landing-enquiry-status ${status.type} bp-field-wide`} role={status.type === 'error' ? 'alert' : 'status'}>
       <strong>{status.type === 'success' ? 'Enquiry sent' : 'We could not send that'}</strong>
       <span>{status.message}</span>
@@ -105,3 +111,4 @@ export default function EnquiryForm() {
     </div>}
   </form>;
 }
+
