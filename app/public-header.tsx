@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 const links = [
-  ['About', '#about'], ['Services', '#services'], ['Our work', '#work'], ['Sympathy', '#sympathy'], ['Enquire', '#enquire'],
+  ['About', '#about'], ['Services', '#services'], ['Our work', '#work'], ['Weddings', '#weddings'], ['Sympathy', '#sympathy'], ['Enquire', '#enquire'],
 ] as const;
 
 export default function PublicHeader() {

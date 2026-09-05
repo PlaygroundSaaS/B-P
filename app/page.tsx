@@ -1,6 +1,16 @@
 import Image from 'next/image';
 import EnquiryForm from './enquiry-form';
 import PublicHeader from './public-header';
+import weddingStyles from './wedding-gallery.module.css';
+
+const weddingImages = [
+  { src: '/assets/weddings/wedding-02.jpg', alt: 'Two pastel floral arrangements on stone plinths framing a wedding ceremony table beneath an arched window', label: 'The ceremony, ready for you' },
+  { src: '/assets/weddings/wedding-03.jpg', alt: 'A wedding arrangement of green hydrangeas, pale yellow roses, white flowers and lilac stems', label: 'Soft colour, natural texture' },
+  { src: '/assets/weddings/wedding-04.jpg', alt: 'A florist placing the finishing touches on wedding ceremony flowers beside a tall window', label: 'Bringing the setting together' },
+  { src: '/assets/weddings/wedding-05.jpg', alt: 'A florist arranging pastel wedding flowers on a stone pedestal in a sunlit room', label: 'Every stem, carefully placed' },
+  { src: '/assets/weddings/wedding-07.jpg', alt: 'A florist carrying a large wedding flower arrangement towards the venue', label: 'From our studio to your day' },
+  { src: '/assets/weddings/wedding-09.jpg', alt: 'A florist carrying green, white and pale yellow wedding flowers outside a brick venue', label: 'Flowers arriving with care' },
+];
 
 const recentWork = [
   { src: '/assets/studio-work-4.jpg', alt: 'Pastel yellow and lilac flowers arranged in the studio', label: 'Season-led colour' },
@@ -82,6 +92,22 @@ export default function Home() {
           </div>
         </section>
 
+        <section className={weddingStyles.section} id="weddings" aria-labelledby="weddings-title">
+          <div className="bp-section-heading">
+            <div><p className="bp-kicker">WEDDING FLOWERS</p><h2 id="weddings-title">A day made<br /><em>beautifully yours.</em></h2></div>
+            <p>From the flowers arriving to the final stems in place, a glimpse of the care behind our wedding designs.</p>
+          </div>
+          <div className={weddingStyles.grid}>
+            {weddingImages.map(photo => (
+              <figure className={weddingStyles.photo} key={photo.src}>
+                <Image src={photo.src} alt={photo.alt} width={1536} height={2048} sizes="(max-width: 600px) calc(100vw - 48px), (max-width: 1020px) 43vw, (max-width: 1500px) 29vw, 428px" />
+                <figcaption>{photo.label}</figcaption>
+              </figure>
+            ))}
+          </div>
+          <div className={weddingStyles.action}><a className="bp-text-link" href="#enquire">Talk to us about your wedding <span aria-hidden="true">→</span></a></div>
+        </section>
+
         <section className="bp-sympathy" id="sympathy">
           <div className="bp-sympathy-copy">
             <p className="bp-kicker">SYMPATHY FLOWERS</p>
@@ -118,7 +144,7 @@ export default function Home() {
 
       <footer className="bp-footer" id="contact">
         <div className="bp-footer-brand"><Image src="/assets/brand-logo.png" alt="Bramble and Petal Florist Studio" width={158} height={108} /><p>Thoughtful, seasonal flowers made with feeling.</p></div>
-        <div><p className="bp-kicker">EXPLORE</p><a href="#about">About</a><a href="#services">Services</a><a href="#work">Our work</a><a href="#enquire">Enquire</a></div>
+        <div><p className="bp-kicker">EXPLORE</p><a href="#about">About</a><a href="#services">Services</a><a href="#work">Our work</a><a href="#weddings">Weddings</a><a href="#enquire">Enquire</a></div>
         <div><p className="bp-kicker">GET IN TOUCH</p><a href="mailto:info@bramblesandpetals.co.uk">info@bramblesandpetals.co.uk</a><span>Studio consultations by arrangement</span></div>
         <div className="bp-footer-bottom"><span>© {new Date().getFullYear()} Bramble &amp; Petal</span><a href="/studio">Studio Hub</a></div>
       </footer>
