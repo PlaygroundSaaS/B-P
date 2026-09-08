@@ -42,6 +42,8 @@ export async function POST(request: Request) {
     if (saveError) throw saveError;
     return json({ id, text: result.text, url: `/api/studio/assistant?id=${id}` });
   } catch (e) {
+    const diagnostic = e instanceof Error ? { name: e.name, message: e.message.replace(/(?:Bearer\s+|sk-|vck_)[A-Za-z0-9_.-]+/g, '[redacted]').slice(0, 600) } : { name: 'UnknownError' };
+    console.error('Studio assistant request failed', { id, ...diagnostic });
     if (id && !(e instanceof RequestError)) await db.from('studio_ai_generations').update({ status: 'error' }).eq('id', id).eq('workspace_key', STUDIO_WORKSPACE).eq('status', 'pending');
     return json({ error: e instanceof RequestError ? e.message : 'The AI service could not complete this request. Saved records and the calculated pricing insights are still available.' }, e instanceof RequestError ? e.status : 503);
   }
