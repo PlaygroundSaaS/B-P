@@ -1,10 +1,12 @@
 import { DEFAULT_SETTINGS, emptyStudio, num } from './pricing';
 import type { StudioData } from './types';
+import { emptyOperations } from './operations-types';
 
 export function reviveData(value: unknown): StudioData {
   const raw = value && typeof value === 'object' ? value as Partial<StudioData> : {};
   return {
     version: 1,
+    operations: { ...emptyOperations(), ...(raw.operations || {}) },
     inventory: Array.isArray(raw.inventory) ? raw.inventory.map(item => ({ ...item, costPerStem: num(item.costPerStem), stemsPurchased: num(item.stemsPurchased), stemsRemaining: num(item.stemsRemaining) })) : [],
     wastage: Array.isArray(raw.wastage) ? raw.wastage.map(item => ({ ...item, quantity: num(item.quantity), unitCost: num(item.unitCost) })) : [],
     materials: Array.isArray(raw.materials) ? raw.materials.map(material => ({ ...material, unitCost: num(material.unitCost) })) : [],

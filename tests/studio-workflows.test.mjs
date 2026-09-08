@@ -65,10 +65,10 @@ test('invalid complete-state writes never reach a database mutation',async()=>{
   assert.equal(response.status,400);assert.equal(touched,false);assert.equal(response.headers.get('cache-control'),'private, no-store');
 });
 test('revision conflicts return 409 instead of overwriting another edit',async()=>{
-  let revision='';const chain={update(){return this},eq(key,value){if(key==='updated_at') revision=value;return this},select(){return this},maybeSingle:async()=>({data:null,error:null})};
-  const api=load('app/api/studio/route.ts',{'@/lib/studio-auth':{hasStudioSession:async()=>true},'@/lib/studio-database':{createStudioDatabaseClient:()=>({from:()=>chain})}});
+  let committed=false;
+  const api=load('app/api/studio/route.ts',{'@/lib/studio-auth':{hasStudioSession:async()=>true},'@/lib/studio-database':{createStudioDatabaseClient:()=>({})},'@/lib/studio-command-server':{readWorkspace:async()=>({data:sample(),updatedAt:'2026-09-06T10:00:00Z'}),commitWorkspace:async()=>{committed=true;throw Error('must not overwrite')}}});
   const response=await api.PUT(new Request('https://example.test/api/studio',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({data:sample(),expectedUpdatedAt:'2026-09-05T10:00:00Z'})}));
-  assert.equal(response.status,409);assert.equal(revision,'2026-09-05T10:00:00Z');
+  assert.equal(response.status,409);assert.equal(committed,false);
 });
 test('enquiry handles email-provider network failure with a usable response',async()=>{
   const oldFetch=globalThis.fetch;const oldKey=process.env.RESEND_API_KEY;const oldFrom=process.env.RESEND_FROM_EMAIL;

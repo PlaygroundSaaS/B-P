@@ -25,7 +25,7 @@ export const validStudioCredentials = (username: string, password: string) => {
 
 export const createStudioSession = () => {
   const secret = sessionSecret();
-  const payload = Buffer.from(JSON.stringify({ exp: Date.now() + SESSION_SECONDS * 1000 })).toString('base64url');
+  const payload = Buffer.from(JSON.stringify({ role: 'owner', exp: Date.now() + SESSION_SECONDS * 1000 })).toString('base64url');
   return `${payload}.${signature(payload, secret)}`;
 };
 
@@ -49,9 +49,10 @@ export const hasStudioSession = async () => {
   if (!payload || !receivedSignature || extra.length) return false;
   if (!same(receivedSignature, signature(payload, secret))) return false;
   try {
-    const { exp } = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8')) as { exp?: unknown };
-    return typeof exp === 'number' && exp > Date.now();
+    const { exp, role } = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8')) as { exp?: unknown; role?: unknown };
+    return (role === undefined || role === 'owner') && typeof exp === 'number' && exp > Date.now();
   } catch {
     return false;
   }
 };
+

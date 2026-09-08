@@ -1,3 +1,4 @@
+import type { RecipeExtras, OperationsData, EventDetails, InspirationSelection, EventRequirement, StudioAsset } from './operations-types';
 export type LineCategory = 'stem' | 'sundry';
 
 export interface InventoryItem {
@@ -12,9 +13,20 @@ export interface InventoryItem {
   supplier?: string;
   supplierCode?: string;
   receivedAt?: string;
+  category?: string;
+  batch?: string;
+  purchaseDate?: string;
+  usableDate?: string;
+  expiryDate?: string;
+  season?: string;
+  location?: string;
+  notes?: string;
+  image?: StudioAsset;
 }
 
 export interface WastageRecord {
+  notes?: string;
+  image?: StudioAsset;
   id: string;
   inventoryId: string;
   name: string;
@@ -34,6 +46,10 @@ export interface Material {
 }
 
 export interface Customer {
+  preferredFlowers?: string;
+  preferredColours?: string;
+  anniversary?: string;
+  importantDates?: string;
   id: string;
   name: string;
   contact: string;
@@ -42,6 +58,7 @@ export interface Customer {
 }
 
 export interface QuoteLine {
+  costCategory?: 'Flower' | 'Packaging' | 'Sundry';
   stockUnit?: 'stem' | 'bunch' | 'unit';
   id: string;
   inventoryId: string | null;
@@ -51,7 +68,7 @@ export interface QuoteLine {
   unitCost: number;
 }
 
-export interface Quote {
+export interface Quote extends RecipeExtras {
   id: string;
   clientName: string;
   contact?: string;
@@ -77,6 +94,10 @@ export interface Job extends Quote {
 }
 
 export interface WeddingPlan {
+  customerId?: string;
+  details?: EventDetails;
+  inspiration?: InspirationSelection[];
+  requirements?: EventRequirement[];
   id: string;
   clientName: string;
   type: 'Wedding' | 'Funeral' | 'Corporate';
@@ -167,6 +188,7 @@ export interface PlanReferenceImage {
 }
 
 export interface Settings {
+  corporationTaxRate?: number;
   defaultMarkup: number;
   defaultWastage: number;
   labourRate: number;
@@ -174,6 +196,12 @@ export interface Settings {
 }
 
 export interface QuoteTotals {
+  packagingCost?: number;
+  deliveryCost?: number;
+  setupCost?: number;
+  collectionCost?: number;
+  supplierCharges?: number;
+  additionalExpenses?: number;
   stemCost: number;
   sundryCost: number;
   materialCost: number;
@@ -189,6 +217,7 @@ export interface QuoteTotals {
 }
 
 export interface StudioData {
+  operations?: OperationsData;
   version: number;
   inventory: InventoryItem[];
   wastage: WastageRecord[];

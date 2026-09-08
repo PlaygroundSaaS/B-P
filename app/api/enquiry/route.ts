@@ -1,3 +1,4 @@
+import { captureWebsiteEnquiry } from '@/lib/website-enquiry';
 import { NextResponse } from 'next/server';
 import { readJsonObject, requireSameOrigin, RequestError } from '@/lib/request-body';
 
@@ -57,6 +58,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'We could not send your enquiry just now. Please try again or email us directly.' }, { status: 502 });
   }
 
+  const captured = await captureWebsiteEnquiry({ name, email, phone, occasion, eventDate, location, message });
+  if (!captured) console.error('[enquiry] Email delivered; Studio lead capture unavailable.');
   return NextResponse.json({ message: 'Thank you — your enquiry has been sent. We’ll be in touch soon.' });
 }
 
