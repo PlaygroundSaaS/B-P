@@ -8,7 +8,7 @@ const require = createRequire(import.meta.url);
 const root = resolve(import.meta.dirname, '..');
 function load(path, mocks = {}) {
   const filename = resolve(root, path);
-  const source = ts.transpileModule(readFileSync(filename, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true } }).outputText;
+  const source = ts.transpileModule(readFileSync(filename, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true, jsx: ts.JsxEmit.ReactJSX } }).outputText;
   const module = { exports: {} };
   new Function('module', 'exports', 'require', source)(module, module.exports, name => name in mocks ? mocks[name] : name.startsWith('@/') ? load(name.slice(2) + '.ts', mocks) : name.startsWith('.') ? load(resolve(dirname(filename), name) + '.ts', mocks) : require(name));
   return module.exports;
@@ -46,3 +46,22 @@ test('client session cannot be promoted into the owner cookie, while existing ow
 test('hire checks peak overlapping use rather than adding non-overlapping bookings',()=>{const d=state();d.operations={...load('lib/operations-types.ts').emptyOperations(),hireItems:[{id:'vase',name:'Vase',quantity:5,replacementCost:10,notes:'',category:'Vase'}],hireReservations:[{id:'a',itemId:'vase',planId:'event',clientName:'Sample',quantity:3,from:'2026-10-01',to:'2026-10-02',status:'Reserved',returned:0,damaged:0,lost:0,notes:''},{id:'b',itemId:'vase',planId:'event',clientName:'Sample',quantity:3,from:'2026-10-04',to:'2026-10-05',status:'Reserved',returned:0,damaged:0,lost:0,notes:''}]};const next=apply(d,{type:'reserveHire',reservation:{...d.operations.hireReservations[0],id:'c',quantity:2,from:'2026-10-01',to:'2026-10-05'}});assert.equal(next.data.operations.hireReservations.length,3);assert.throws(()=>apply(d,{type:'reserveHire',reservation:{...d.operations.hireReservations[0],id:'c',quantity:3,from:'2026-10-01',to:'2026-10-05'}}),/Only 2/);});
 test('invoice issuance is idempotent and preserves accepted totals',()=>{const d=purchased();const total=d.jobs[0].totals.grossTotal;const next=apply(d,{type:'issueInvoice',orderId:'recipe'}).data;assert.ok(next.jobs[0].invoicedAt);assert.equal(next.jobs[0].totals.grossTotal,total);assert.equal(apply(next,{type:'issueInvoice',orderId:'recipe'}).data.jobs[0].invoicedAt,next.jobs[0].invoicedAt);});
 test('AI and photo assistance reject client or anonymous access before calling a model',async()=>{const mocks={'ai':{},'@/lib/studio-auth':{hasStudioSession:async()=>false},'@/lib/studio-database':{createStudioDatabaseClient:()=>{throw Error('must not connect')}}};for(const path of ['app/api/studio/assistant/route.ts','app/api/studio/photo-analysis/route.ts']){const api=load(path,mocks);assert.equal((await api.POST(new Request('https://example.test'))).status,401);assert.equal((await api.GET(new Request('https://example.test'))).status,401);}});
+
+
+test('client presentation renders the floral plan without internal notes, costs, VAT calculations or stock', () => {
+  const React = require('react'); const { renderToStaticMarkup } = require('react-dom/server');
+  const { default: Presentation } = load('app/studio/event-presentation.tsx', {'./ops-ui': { Photo: ({src,alt}) => React.createElement('img',{src:src || '/placeholder',alt}) }});
+  const d = group(); d.plans[0].details = { consultationNotes: 'INTERNAL_SECRET_NOTE' }; d.plans[0].palette = 'Soft garden colours';
+  const html = renderToStaticMarkup(React.createElement(Presentation, {plan:clientEvent(d.plans[0]),quotes:d.operations.eventQuotes.map(q=>clientQuotation(d,q)),close:()=>{}}));
+  assert.match(html,/Soft garden colours/); assert.match(html,/Your complete quote/);
+  assert.doesNotMatch(html,/INTERNAL_SECRET_NOTE|Gross profit|margin|\bVAT\b|corporation tax|Inventory|unitCost|setupCost/i);
+});
+test('paid standalone order cannot be amended below payments already recorded', () => {
+  let d=purchased(); const total=d.jobs[0].totals.grossTotal;
+  d=apply(d,{type:'payment',payment:{id:'paid-amend',orderId:'recipe',clientName:'Sample',kind:'Balance',method:'Cash',amount:total,date:'2026-09-08',reference:''}}).data;
+  assert.throws(()=>apply(d,{type:'amendRecipe',recipe:{...d.jobs[0],sellingPriceExVat:1},reason:'Reduce price'}),/refund/i);
+});
+test('cancelled orders cannot receive a new payment', () => {
+  const d=apply(purchased(),{type:'returnRecipe',recipeId:'recipe',reason:'Not needed'}).data;
+  assert.throws(()=>apply(d,{type:'payment',payment:{id:'cancelled-payment',orderId:'recipe',clientName:'Sample',kind:'Balance',method:'Cash',amount:1,date:'2026-09-08',reference:''}}),/Cancelled orders/);
+});
