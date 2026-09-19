@@ -2,7 +2,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
-const links = [['Home','/'],['Weddings','/weddings'],['Funerals','/funerals'],['Corporate','/corporate'],['Flowers','/flowers'],['Our Studio','/our-studio'],['Client Studio','/client-studio']] as const;
+const links = [['Home','/'],['Weddings','/weddings'],['Funerals','/funerals'],['Corporate','/corporate'],['Flowers','/flowers'],['Our Studio','/our-studio'],['Client Studio','/client-studio'],['Studio login','/studio']] as const;
 export default function PublicHeader() {
   const [open,setOpen] = useState(false); const trigger = useRef<HTMLButtonElement>(null); const menu = useRef<HTMLDivElement>(null);
   useEffect(() => {
