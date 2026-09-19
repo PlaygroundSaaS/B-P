@@ -3,6 +3,7 @@ import './globals.css';
 import './enquiry-form.css';
 import './experience-refresh.css';
 import './site-audit.css';
+import './atelier.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.bramblesandpetals.co.uk'),

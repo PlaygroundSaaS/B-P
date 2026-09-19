@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { StudioBrand } from './design-system';
 
 export default function StudioLoginForm() {
   const router = useRouter();
@@ -29,11 +30,11 @@ export default function StudioLoginForm() {
     }
   };
 
-  return <main className="login-screen">
+  return <main className="login-screen atelier-login"><div className="atelier-login-photo"><span>Flowers for life’s<br /><em>most beautiful moments.</em></span></div>
     <form className="panel-form login-form" onSubmit={signIn}>
-      <a className="studio-home-link" href="/">← Back to the website</a><p className="eyebrow">BRAMBLE &amp; PETAL</p>
-      <h1>Studio Hub</h1>
-      <p className="login-intro">Sign in to manage your flowers, plans and clients.</p>
+      <a className="studio-home-link" href="/">← Back to the website</a><StudioBrand /><p className="eyebrow">WELCOME TO YOUR STUDIO</p>
+      <h1>Beautiful beginnings.</h1>
+      <p className="login-intro">A calm space for your flowers, your clients and everything in between.</p>
       <fieldset className="login-fields" disabled={submitting}><label>Username<input value={username} onChange={event => setUsername(event.target.value)} autoComplete="username" required /></label>
       <label>Password<input value={password} onChange={event => setPassword(event.target.value)} type={showPassword ? "text" : "password"} autoComplete="current-password" required /></label>
       <button type="button" className="password-toggle" aria-pressed={showPassword} onClick={() => setShowPassword(value => !value)}>{showPassword ? 'Hide password' : 'Show password'}</button>
