@@ -5,7 +5,7 @@ import Dialog from './dialog';
 import styles from './wedding-gallery.module.css';
 
 type Photo = { src: string; alt: string; label: string; width?: number; height?: number };
-export default function WeddingGallery({ images }: { images: Photo[] }) {
+export default function WeddingGallery({ images, showCaptions = true }: { images: Photo[]; showCaptions?: boolean }) {
   const [selected, setSelected] = useState<number | null>(null);
   const photo = selected === null ? null : images[selected];
   return <>
@@ -13,7 +13,7 @@ export default function WeddingGallery({ images }: { images: Photo[] }) {
       <button className="wedding-photo-button" onClick={() => setSelected(index)} aria-label={`Enlarge: ${photo.label}`}>
         <Image src={photo.src} alt={photo.alt} width={photo.width ?? 1536} height={photo.height ?? 2048} sizes="(max-width: 600px) calc(100vw - 48px), (max-width: 1020px) 43vw, (max-width: 1500px) 29vw, 428px" />
         <span aria-hidden="true">View photo ↗</span>
-      </button><figcaption>{photo.label}</figcaption>
+      </button>{showCaptions && <figcaption>{photo.label}</figcaption>}
     </figure>)}</div>
     {photo && selected !== null && <Dialog className="wedding-lightbox" label="Wedding photo gallery" onClose={() => setSelected(null)}>
       <div className="wedding-lightbox-content" onKeyDown={event => { if (event.key === 'ArrowRight') setSelected((selected + 1) % images.length); if (event.key === 'ArrowLeft') setSelected((selected + images.length - 1) % images.length); }}>

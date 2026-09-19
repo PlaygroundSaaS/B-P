@@ -25,8 +25,9 @@ const occasionDetails: Record<string, { prompt: string; placeholder: string }> =
   },
 };
 
-export default function EnquiryForm() {
-  const [occasion, setOccasion] = useState('Wedding');
+export default function EnquiryForm({ initialOccasion = 'Wedding' }: { initialOccasion?: string }) {
+  const defaultOccasion = occasionDetails[initialOccasion] ? initialOccasion : 'Wedding';
+  const [occasion, setOccasion] = useState(defaultOccasion);
   const [status, setStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   useEffect(() => {
@@ -54,7 +55,7 @@ export default function EnquiryForm() {
         : {};
       if (!response.ok) throw new Error(result.error || 'We could not send your enquiry. Please try again or email us directly.');
       form.reset();
-      setOccasion('Wedding');
+      setOccasion(defaultOccasion);
       setStatus({ type: 'success', message: result.message || 'Thank you — your enquiry has been sent. We will be in touch shortly.' });
     } catch (caught) {
       setStatus({ type: 'error', message: caught instanceof Error ? caught.message : 'We could not send your enquiry. Please try again or email us directly.' });

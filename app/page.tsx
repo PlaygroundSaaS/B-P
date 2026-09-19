@@ -1,155 +1,23 @@
 import Image from 'next/image';
+import ClientReviews from './public/reviews';
+import Link from 'next/link';
 import EnquiryForm from './enquiry-form';
-import PublicHeader from './public-header';
-import EnquiryLink from './enquiry-link';
-import WeddingGallery from './wedding-gallery';
-import weddingStyles from './wedding-gallery.module.css';
+import { PublicPage, Intro, PhotoFrame, TextLink, ConsultationCTA, Arrow } from './public/components';
 
-const weddingImages = [
-  { src: '/assets/weddings/ceremony-celebration.webp', width: 678, height: 1030, alt: 'A newly married couple kissing between pastel flower arrangements beneath a grand arched window', label: 'A moment to remember' },
-  { src: '/assets/weddings/bridal-party-bouquets.webp', width: 1179, height: 1731, alt: 'A bride and bridesmaid holding white, pale blue and lilac bouquets on stone steps', label: 'Flowers to hold close' },
-  { src: '/assets/weddings/flower-girl-crown.webp', width: 953, height: 1431, alt: 'A flower girl wearing a delicate white flower crown and carrying a basket of petals', label: 'The smallest, sweetest details' },
-  { src: '/assets/weddings/pastel-pedestal-details.webp', width: 1440, height: 1920, alt: 'Green hydrangeas, white dahlias, pale yellow roses and lilac flowers in a wedding pedestal arrangement', label: 'Pastels in full bloom' },
-  { src: '/assets/weddings/sunlit-ceremony-flowers.webp', width: 1440, height: 1920, alt: 'Sunlight falling across a pastel wedding flower arrangement beside a tall window', label: 'A little light, a little magic' },
-  { src: '/assets/weddings/creating-wedding-flowers.webp', width: 1080, height: 1440, alt: 'A florist assembling a large pastel wedding arrangement in the studio, surrounded by stems and foliage', label: 'Made by hand, with heart' },
-  { src: '/assets/weddings/pastel-flowers-arriving.webp', width: 1440, height: 1920, alt: 'A woman carrying a bucket of pale blue, white and soft yellow flowers in the sunshine', label: 'Gathered for your day' },
-  { src: '/assets/weddings/wedding-02.jpg', alt: 'Two pastel floral arrangements on stone plinths framing a wedding ceremony table beneath an arched window', label: 'The ceremony, ready for you' },
-  { src: '/assets/weddings/wedding-03.jpg', alt: 'A wedding arrangement of green hydrangeas, pale yellow roses, white flowers and lilac stems', label: 'Soft colour, natural texture' },
-  { src: '/assets/weddings/wedding-04.jpg', alt: 'A florist placing the finishing touches on wedding ceremony flowers beside a tall window', label: 'Bringing the setting together' },
-  { src: '/assets/weddings/wedding-05.jpg', alt: 'A florist arranging pastel wedding flowers on a stone pedestal in a sunlit room', label: 'Every stem, carefully placed' },
-  { src: '/assets/weddings/wedding-07.jpg', alt: 'A florist carrying a large wedding flower arrangement towards the venue', label: 'From our studio to your day' },
-  { src: '/assets/weddings/wedding-09.jpg', alt: 'A florist carrying green, white and pale yellow wedding flowers outside a brick venue', label: 'Flowers arriving with care' },
-];
-
-const recentWork = [
-  { src: '/assets/studio-work-4.jpg', alt: 'Pastel yellow and lilac flowers arranged in the studio', label: 'Season-led colour' },
-  { src: '/assets/studio-work-2.jpg', alt: 'A natural white bouquet with eucalyptus', label: 'Wild white and green' },
-  { src: '/assets/studio-work-6.jpg', alt: 'Pink and white hand-tied bouquet ready to give', label: 'Gathered to give' },
-  { src: '/assets/bouquet-03.jpg', alt: 'A warm autumnal bouquet held in front of the florist', label: 'Rich autumn texture' },
-];
-
-const services = [
-  { number: '01', title: 'Weddings', copy: 'Personal flowers, ceremony designs, table flowers and installations shaped around your day.' },
-  { number: '02', title: 'Sympathy', copy: 'Thoughtful tributes, sprays and farewell flowers created with sensitivity and care.' },
-  { number: '03', title: 'Corporate', copy: 'Flowers for events, launches, workplaces and brand moments, planned from setup to collection.' },
-  { number: '04', title: 'Bouquets', copy: 'Seasonal, hand-tied flowers for birthdays, thanks and the moments that deserve something special.' },
-];
+export const metadata = { alternates: { canonical: '/' } };
 
 export default function Home() {
-  return (
-    <div className="bp-site">
-      <a className="bp-skip-link" href="#main-content">Skip to content</a>
-      <PublicHeader /><header className="bp-hero" id="top">
-        
-        <div className="bp-hero-shade" />
-        <div className="bp-hero-copy">
-          <p className="bp-kicker bp-kicker--light">INDEPENDENT FLORAL STUDIO</p>
-          <h1>Flowers that feel<br />entirely <em>yours.</em></h1>
-          <p className="bp-hero-intro">Seasonal, characterful flowers for weddings, farewells, celebrations and everyday moments.</p>
-          <div className="bp-actions">
-            <a className="bp-button bp-button--light" href="#enquire">Start an enquiry</a>
-            <a className="bp-text-link bp-text-link--light" href="#work">Explore our work <span aria-hidden="true">↘</span></a>
-          </div>
-        </div>
-        <p className="bp-hero-note">Bramble &amp; Petal · Florist Studio</p>
-      </header>
-
-      <main id="main-content">
-        <section className="bp-intro" id="about">
-          <div className="bp-intro-copy">
-            <p className="bp-kicker">THOUGHTFUL FLORAL DESIGN</p>
-            <h2>Made for the moment,<br /><em>never from a template.</em></h2>
-            <p className="bp-lede">We create distinctive floral work with a natural, garden-led feel. Every design begins with the people, place and season behind it.</p>
-            <a className="bp-text-link" href="#studio">Meet Bramble &amp; Petal <span aria-hidden="true">→</span></a>
-          </div>
-          <figure className="bp-intro-image bp-image-reveal">
-            <Image src="/assets/bouquet-04.jpg" alt="A peach, blush and cream Bramble and Petal bouquet" fill sizes="(max-width: 760px) 100vw, 50vw" />
-            <figcaption>Flowers gathered with colour, texture and movement in mind.</figcaption>
-          </figure>
-        </section>
-
-        <section className="bp-service-section" id="services" aria-labelledby="services-title">
-          <div className="bp-section-heading">
-            <div><p className="bp-kicker">HOW WE CAN HELP</p><h2 id="services-title">Flowers for the moments<br />that <em>matter most.</em></h2></div>
-            <p>From one beautifully gathered bouquet to a complete event, the process stays personal, considered and clear.</p>
-          </div>
-          <div className="bp-service-list">
-            {services.map(service => <article key={service.title}><span>{service.number}</span><h3>{service.title}</h3><p>{service.copy}</p><EnquiryLink occasion={service.title === 'Sympathy' ? 'Funeral flowers' : service.title === 'Corporate' ? 'Corporate event' : service.title === 'Bouquets' ? 'Everyday flowers' : 'Wedding'} aria-label={`Enquire about ${service.title.toLowerCase()}`}>Enquire <span aria-hidden="true">→</span></EnquiryLink></article>)}
-          </div>
-        </section>
-
-        <section className="bp-consultation" id="studio">
-          <div className="bp-consultation-image bp-image-reveal">
-            <Image src="/assets/studio-consultations.jpg" alt="The warm Bramble and Petal flower studio consultation space" fill sizes="(max-width: 760px) 100vw, 55vw" />
-          </div>
-          <div className="bp-consultation-copy">
-            <p className="bp-kicker">VISIT THE FLOWER STUDIO</p>
-            <h2>A calm place to<br /><em>talk through every detail.</em></h2>
-            <p>Wedding, funeral and corporate consultations can be held in the flower studio — a relaxed, private space to share ideas, look through references and shape the plan together.</p>
-            <ul><li>Wedding flowers and styling</li><li>Funeral tributes and family flowers</li><li>Corporate events and installations</li></ul>
-            <a className="bp-button" href="#enquire">Arrange a consultation</a>
-          </div>
-        </section>
-
-        <section className="bp-work" id="work" aria-labelledby="work-title">
-          <div className="bp-section-heading">
-            <div><p className="bp-kicker">FRESH FROM THE STUDIO</p><h2 id="work-title">A little of what<br />we&apos;ve been <em>making.</em></h2></div>
-            <p>Real flowers made in the Bramble &amp; Petal studio — full of the colour and character of the season.</p>
-          </div>
-          <div className="bp-work-grid">
-            {recentWork.map((work, index) => <figure className={index === 0 ? 'bp-work-feature' : ''} key={work.src}><Image src={work.src} alt={work.alt} fill sizes={index === 0 ? '(max-width: 760px) 86vw, 46vw' : '(max-width: 760px) 78vw, 24vw'} /><figcaption><span>0{index + 1}</span>{work.label}</figcaption></figure>)}
-          </div>
-        </section>
-
-        <section className={weddingStyles.section} id="weddings" aria-labelledby="weddings-title">
-          <div className="bp-section-heading">
-            <div><p className="bp-kicker">WEDDING FLOWERS</p><h2 id="weddings-title">A day made<br /><em>beautifully yours.</em></h2></div>
-            <p>From the flowers arriving to the final stems in place, a glimpse of the care behind our wedding designs.</p>
-          </div>
-          <WeddingGallery images={weddingImages} />
-          <div className={weddingStyles.action}><EnquiryLink className="bp-text-link" occasion="Wedding">Talk to us about your wedding <span aria-hidden="true">→</span></EnquiryLink></div>
-        </section>
-
-        <section className="bp-sympathy" id="sympathy">
-          <div className="bp-sympathy-copy">
-            <p className="bp-kicker">SYMPATHY FLOWERS</p>
-            <h2>Flowers to remember,<br /><em>honour and celebrate.</em></h2>
-            <p>At a difficult time, flowers can say what words cannot. We create personal tributes, sprays, wreaths and farewell arrangements with sensitivity and attention to meaningful detail.</p>
-            <EnquiryLink className="bp-text-link" occasion="Funeral flowers">Arrange sympathy flowers <span aria-hidden="true">→</span></EnquiryLink>
-          </div>
-          <div className="bp-sympathy-images">
-            <figure><Image src="/assets/sympathy-tribute.jpg" alt="A floral funeral tribute and letter arrangement" fill sizes="(max-width: 760px) 82vw, 32vw" /><figcaption>Personal farewell tributes</figcaption></figure>
-            <figure><Image src="/assets/sympathy-spray.jpg" alt="A natural white and green floral spray" fill sizes="(max-width: 760px) 82vw, 32vw" /><figcaption>Natural funeral sprays</figcaption></figure>
-            <figure><Image src="/assets/sympathy-making.jpg" alt="Bramble and Petal florists creating a white and green funeral tribute" fill sizes="(max-width: 760px) 82vw, 32vw" /><figcaption>Made with care, by hand</figcaption></figure>
-          </div>
-        </section>
-
-        <section className="bp-process" aria-labelledby="process-title">
-          <div className="bp-section-heading bp-section-heading--light"><div><p className="bp-kicker bp-kicker--light">OUR APPROACH</p><h2 id="process-title">From first thought<br />to <em>final flourish.</em></h2></div><p>A considered process that keeps the experience as lovely and unhurried as the flowers themselves.</p></div>
-          <ol>
-            <li><span>01</span><div><h3>Tell us your story</h3><p>Share the occasion, the atmosphere and anything that matters to you.</p></div></li>
-            <li><span>02</span><div><h3>Shape the details</h3><p>We explore colour, season, scale and practical requirements together.</p></div></li>
-            <li><span>03</span><div><h3>Bring it to life</h3><p>Every stem is prepared and placed with care for the finished moment.</p></div></li>
-          </ol>
-        </section>
-
-        <section className="bp-enquire" id="enquire">
-          <div className="bp-enquire-copy">
-            <p className="bp-kicker">START A CONVERSATION</p>
-            <h2>Tell us what<br />you&apos;re <em>imagining.</em></h2>
-            <p>Choose your occasion and share the details you already know. It is completely fine if some things are still undecided.</p>
-            <div className="bp-contact-note"><span>Prefer email?</span><a href="mailto:info@bramblesandpetals.co.uk">info@bramblesandpetals.co.uk</a></div>
-          </div>
-          <EnquiryForm />
-        </section>
-      </main>
-
-      <footer className="bp-footer" id="contact">
-        <div className="bp-footer-brand"><Image src="/assets/brand-logo.png" alt="Bramble and Petal Florist Studio" width={158} height={108} /><p>Thoughtful, seasonal flowers made with feeling.</p></div>
-        <div><p className="bp-kicker">EXPLORE</p><a href="#about">About</a><a href="#services">Services</a><a href="#work">Our work</a><a href="#weddings">Weddings</a><a href="#enquire">Enquire</a></div>
-        <div><p className="bp-kicker">GET IN TOUCH</p><a href="mailto:info@bramblesandpetals.co.uk">info@bramblesandpetals.co.uk</a><span>Studio consultations by arrangement</span></div>
-        <div className="bp-footer-bottom"><span>© {new Date().getFullYear()} Bramble &amp; Petal</span><a href="/studio">Studio Hub</a></div>
-      </footer>
-    </div>
-  );
+  return <PublicPage className="public-home"><script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify({"@context":"https://schema.org","@type":"Organization",name:"Bramble & Petal Florist Studio",url:"https://www.bramblesandpetals.co.uk",logo:"https://www.bramblesandpetals.co.uk/assets/brand-logo.png",email:"info@bramblesandpetals.co.uk"})}} />
+    <section className="public-hero" aria-labelledby="home-title"><div className="public-hero-copy"><p className="public-kicker">BRAMBLE &amp; PETAL · FLORIST STUDIO</p><h1 id="home-title">Flowers for life’s<br /><em>most beautiful</em><br />moments.</h1><p>Bespoke flowers for weddings, farewells<br className="public-desktop-break" /> and the moments in between.</p><Link className="public-button" href="#weddings">Discover our work<Arrow /></Link><span className="public-hero-signature">Beautiful flowers. Brighter days.</span></div><div className="public-hero-image"><Image src="/assets/weddings/ceremony-celebration.webp" alt="A newly married couple between Bramble & Petal pastel flower arrangements in a light-filled ceremony room" width={678} height={1030} sizes="(max-width: 700px) 100vw, 48vw" preload /></div></section>
+    <section className="public-welcome public-split" id="about"><div className="public-section-copy"><Intro label="WELCOME TO BRAMBLE & PETAL" title={<>Thoughtful flowers,<br />for every occasion.</>}>Inspired by the season and the people they’re made for. From a wedding day to a heartfelt goodbye, we create flowers with care, character and a personal touch.</Intro><TextLink href="/our-studio">Our story</TextLink></div><PhotoFrame src="/assets/weddings/pastel-pedestal-details.webp" alt="Cream roses, white dahlias, lilac flowers and green hydrangeas arranged by Bramble & Petal" /><span className="public-side-note">Seasonal flowers.<br />Expertly arranged.</span></section>
+    <section className="public-services public-wrap" id="services" aria-label="Flowers for every occasion"><div className="public-service-grid"><Link href="/weddings" className="public-service"><PhotoFrame src="/assets/weddings/bridal-party-bouquets.webp" alt="Bride and bridesmaid with coordinating pale blue and white bouquets" sizes="(max-width: 700px) 50vw, 25vw" position="50% 66%" /><div><h2>Weddings</h2><span>Your day, in flowers. <Arrow /></span></div></Link><Link href="/funerals" className="public-service"><PhotoFrame src="/assets/sympathy-spray.jpg" alt="A white and green floral spray made in the Bramble & Petal studio" sizes="(max-width: 700px) 50vw, 25vw" /><div><h2>Funerals</h2><span>Made with care. <Arrow /></span></div></Link><Link href="/corporate" className="public-service public-service-type"><span className="public-placeholder-line" aria-hidden="true">B &amp; P</span><p>For spaces.<br />For gatherings.<br /><em>For your business.</em></p><div><h2>Corporate</h2><span>Considered floral design. <Arrow /></span></div></Link><Link href="/flowers" className="public-service"><PhotoFrame src="/assets/studio-work-2.jpg" alt="A hand-tied white bouquet with green eucalyptus, ready in the studio" sizes="(max-width: 700px) 50vw, 25vw" /><div><h2>Everyday flowers</h2><span>A little joy, delivered. <Arrow /></span></div></Link></div></section>
+    <section className="public-wedding-story public-wrap" id="weddings"><div className="public-story-heading"><Intro label="THE WEDDING COLLECTION" title={<>Entirely yours.<br /><em>From the first stem.</em></>}>Your venue, your season, your way of celebrating. Flowers that bring it all together.</Intro><TextLink href="/weddings">Explore weddings</TextLink></div><div className="public-wedding-mosaic"><PhotoFrame className="public-mosaic-main" src="/assets/weddings/wedding-02.jpg" alt="Two pastel pedestal arrangements framing the ceremony table beneath a grand arched window" sizes="(max-width: 700px) 100vw, 55vw" /><PhotoFrame className="public-mosaic-detail" src="/assets/weddings/sunlit-ceremony-flowers.webp" alt="Sunlit white, lilac and green flowers from the same ceremony design" sizes="(max-width: 700px) 50vw, 29vw" /><PhotoFrame className="public-mosaic-personal" src="/assets/weddings/flower-girl-crown.webp" alt="A flower girl wearing a delicate white flower crown and carrying a petal basket" sizes="(max-width: 700px) 50vw, 24vw" /></div></section>
+    <section className="public-studio-story public-split" id="studio"><div className="public-process-photos"><PhotoFrame src="/assets/weddings/creating-wedding-flowers.webp" alt="A florist creating a pastel wedding arrangement by hand in the studio" sizes="(max-width: 700px) 75vw, 38vw" /><PhotoFrame src="/assets/weddings/pastel-flowers-arriving.webp" alt="A woman carrying freshly gathered pale blue and white flowers in the sunshine" sizes="(max-width: 700px) 45vw, 22vw" /></div><div className="public-section-copy"><Intro label="INSIDE OUR STUDIO" title={<>From our hands,<br /><em>to your moments.</em></>}>A conversation, a gathering of ideas, then the making. We consider each stem, from the first design to the final flowers in place.</Intro><TextLink href="/our-studio">Meet the studio</TextLink></div></section>
+    <section className="public-client-section" id="client-studio"><div className="public-client-frame" aria-label="Client Studio introduction"><div className="public-browser-bar"><span /><span /><span /><small>BRAMBLE &amp; PETAL · CLIENT STUDIO</small></div><div className="public-client-preview"><Image src="/assets/brand-logo.png" width={160} height={110} alt="Bramble & Petal Florist Studio" /><p className="public-kicker">A SPACE FOR YOUR IDEAS</p><h3>Your flowers.<br /><em>Your story.</em></h3><p>Colours · Inspiration · Your floral plan</p><Link href="/client">Open your private invitation <Arrow /></Link><small>For clients with an invitation from the studio.</small></div></div><div className="public-section-copy"><Intro label="PLAN SOMETHING PERSONAL" title={<>Introducing the<br />Bramble &amp; Petal<br /><em>Client Studio.</em></>}>A space to gather inspiration, explore your flowers and review your plan together. Begin with a consultation; we’ll arrange your private invitation.</Intro><ul className="public-client-features"><li>Weddings</li><li>Funeral flowers</li><li>Corporate events</li><li>Regular flowers</li></ul><ConsultationCTA /></div></section>
+    <section className="public-sympathy public-split" id="sympathy"><div className="public-section-copy"><Intro label="FLOWERS IN REMEMBRANCE" title={<>Flowers created<br /><em>with care.</em></>}>Thoughtful tributes that reflect the person being remembered and the wishes of those closest to them.</Intro><TextLink href="/funerals">Funeral flowers</TextLink></div><PhotoFrame src="/assets/sympathy-tribute.jpg" alt="Bramble & Petal floral tributes with white lettering and arrangements prepared for a farewell" position="center" /></section>
+    <section className="public-business-flowers public-wrap" id="corporate"><div><Intro label="FOR YOUR BUSINESS" title={<>A fresh perspective.<br /><em>Week after week.</em></>}>Flowers for welcoming spaces, memorable events and regular moments of renewal.</Intro><TextLink href="/corporate">Corporate flowers</TextLink></div><div className="public-business-list"><p>Offices &amp; reception spaces</p><p>Restaurants &amp; hospitality</p><p>Events &amp; gatherings</p><p>Regular floral arrangements</p><TextLink href="/flowers">Explore regular flowers</TextLink></div></section>
+    <section className="public-detail-section" id="work" aria-label="A closer look at our flowers"><div className="public-detail-title"><p className="public-kicker">A CLOSER LOOK</p><h2>Nature, beautifully considered.</h2></div><div className="public-detail-strip"><PhotoFrame src="/assets/studio-work-4.jpg" alt="Pale yellow and lilac flowers gathered on the studio workbench" sizes="(max-width: 700px) 50vw, 25vw" /><PhotoFrame src="/assets/weddings/pastel-pedestal-details.webp" alt="A close look at cream roses and lilac wedding flowers" sizes="(max-width: 700px) 50vw, 25vw" /><PhotoFrame src="/assets/studio-consultations.jpg" alt="The wooden Bramble & Petal consultation studio" sizes="(max-width: 700px) 50vw, 25vw" /><PhotoFrame src="/assets/bouquet-04.jpg" alt="A hand-tied bouquet of peach, cream and blush roses" sizes="(max-width: 700px) 50vw, 25vw" /></div></section>
+    <ClientReviews />
+    <section className="public-enquire public-wrap" id="enquire"><div><Intro label="LET’S BEGIN" title={<>Tell us what<br />you’re planning.</>}>A date, a place, a favourite flower. Share what you know; we’ll explore the rest together.</Intro><a className="public-email" href="mailto:info@bramblesandpetals.co.uk">info@bramblesandpetals.co.uk</a></div><EnquiryForm /></section>
+  </PublicPage>;
 }

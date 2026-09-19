@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import test from 'node:test';
+import ts from 'typescript';
+const source=await readFile(new URL('../lib/review-validation.ts',import.meta.url),'utf8');
+const compiled=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText;
+const module={exports:{}};new Function('module','exports',compiled)(module,module.exports);
+const {validateReview,parseReviewToken}=module.exports;
+const valid={name:'J & A',message:'Thoughtful flowers and a lovely experience.',rating:5,occasion:'Wedding',consent:true};
+test('reviews require explicit publication consent',()=>{assert.throws(()=>validateReview({...valid,consent:false}));assert.throws(()=>validateReview({...valid,consent:'true'}));});
+test('every rating is accepted without filtering negative feedback',()=>{for(let rating=1;rating<=5;rating++)assert.equal(validateReview({...valid,rating}).rating,rating);for(const rating of [0,6,NaN,2.5,'5'])assert.throws(()=>validateReview({...valid,rating}));});
+test('review text and public names are bounded and trimmed',()=>{assert.equal(validateReview({...valid,name:'  Jade  '}).public_name,'Jade');for(const input of [{name:''},{name:'x'.repeat(81)},{message:'short'},{message:'x'.repeat(2001)}])assert.throws(()=>validateReview({...valid,...input}));});
+test('unknown fields never become public review data',()=>{const result=validateReview({...valid,email:'private@example.com',token:'secret',client_label:'private'});assert.deepEqual(Object.keys(result).sort(),['consent','occasion','public_name','rating','review_text']);});
+test('invitation format rejects malformed and extended tokens',()=>{const token='b7178081-d43c-48e0-bcfb-096dad8eaaee.'+'a'.repeat(43);assert.ok(parseReviewToken(token));for(const value of [null,{},'',token+'.extra',token.slice(1),token+'\n'])assert.equal(parseReviewToken(value),null);});

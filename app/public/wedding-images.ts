@@ -1,0 +1,15 @@
+export const weddingImages = [
+  { src: '/assets/weddings/ceremony-celebration.webp', width: 678, height: 1030, alt: 'A newly married couple kissing between pastel flower arrangements beneath a grand arched window', label: 'A moment to remember' },
+  { src: '/assets/weddings/bridal-party-bouquets.webp', width: 1179, height: 1731, alt: 'A bride and bridesmaid holding white, pale blue and lilac bouquets on stone steps', label: 'Flowers to hold close' },
+  { src: '/assets/weddings/flower-girl-crown.webp', width: 953, height: 1431, alt: 'A flower girl wearing a delicate white flower crown and carrying a basket of petals', label: 'The smallest, sweetest details' },
+  { src: '/assets/weddings/pastel-pedestal-details.webp', width: 1440, height: 1920, alt: 'Green hydrangeas, white dahlias, pale yellow roses and lilac flowers in a wedding pedestal arrangement', label: 'Pastels in full bloom' },
+  { src: '/assets/weddings/sunlit-ceremony-flowers.webp', width: 1440, height: 1920, alt: 'Sunlight falling across a pastel wedding flower arrangement beside a tall window', label: 'A little light, a little magic' },
+  { src: '/assets/weddings/creating-wedding-flowers.webp', width: 1080, height: 1440, alt: 'A florist assembling a large pastel wedding arrangement in the studio, surrounded by stems and foliage', label: 'Made by hand, with heart' },
+  { src: '/assets/weddings/pastel-flowers-arriving.webp', width: 1440, height: 1920, alt: 'A woman carrying a bucket of pale blue, white and soft yellow flowers in the sunshine', label: 'Gathered for your day' },
+  { src: '/assets/weddings/wedding-02.jpg', alt: 'Two pastel floral arrangements on stone plinths framing a wedding ceremony table beneath an arched window', label: 'The ceremony, ready for you' },
+  { src: '/assets/weddings/wedding-03.jpg', alt: 'A wedding arrangement of green hydrangeas, pale yellow roses, white flowers and lilac stems', label: 'Soft colour, natural texture' },
+  { src: '/assets/weddings/wedding-04.jpg', alt: 'A florist placing the finishing touches on wedding ceremony flowers beside a tall window', label: 'Bringing the setting together' },
+  { src: '/assets/weddings/wedding-05.jpg', alt: 'A florist arranging pastel wedding flowers on a stone pedestal in a sunlit room', label: 'Every stem, carefully placed' },
+  { src: '/assets/weddings/wedding-07.jpg', alt: 'A florist carrying a large wedding flower arrangement towards the venue', label: 'From our studio to your day' },
+  { src: '/assets/weddings/wedding-09.jpg', alt: 'A florist carrying green, white and pale yellow wedding flowers outside a brick venue', label: 'Flowers arriving with care' },
+];
