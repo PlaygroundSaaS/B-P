@@ -1,0 +1,12 @@
+.quickForm { margin: 24px 0 36px; }
+.quickForm fieldset { border: 0; padding: 0; margin: 0; display: grid; grid-template-columns: 1.5fr 1fr 1fr auto; align-items: start; gap: 18px; min-width: 0; }
+.quickForm label { display: grid; gap: 8px; font-size: 13px; min-width: 0; }
+.quickForm input { width: 100%; min-height: 44px; border: 1px solid #d4d9cc; border-radius: 5px; background: #fffdf9; padding: 10px 12px; font: inherit; box-sizing: border-box; }
+.quickForm small { font-size: 11px; color: #68725f; }
+.quickForm button { margin-top: 26px; min-height: 44px; }
+.quickForm [role=alert] { color: #8d3232; margin-top: 14px; }
+.advanced { margin: 24px 0; border-top: 1px solid #dce0d4; padding-top: 16px; }
+.advanced summary { cursor: pointer; padding: 8px 0; font-size: 13px; color: #526247; }
+.advanced p { font-size: 13px; }
+@media(max-width: 900px) { .quickForm fieldset { grid-template-columns: 1fr 1fr; }.quickForm label:first-child { grid-column: 1 / -1; }.quickForm button { grid-column: 1 / -1; margin-top: 0; } }
+@media(max-width: 450px) { .quickForm fieldset { grid-template-columns: 1fr; }.quickForm input { font-size: 16px; } }
