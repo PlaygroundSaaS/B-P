@@ -1,0 +1,8 @@
+.section { margin-top: 24px; }
+.section .flowerRow { grid-template-columns: minmax(160px, 2fr) minmax(70px, .7fr) minmax(90px, 1fr) auto; margin-bottom: 14px; }
+.section .extraRow { grid-template-columns: minmax(130px, 1.5fr) minmax(110px, 1.3fr) minmax(65px, .6fr) minmax(85px, .8fr) auto; }
+.extras { border-top: 1px solid var(--line); padding-top: 24px; }
+.extraLabel { font-size: 11px; color: var(--olive); margin-bottom: 0; }
+.extraItem { margin-bottom: 12px; }
+@media(max-width: 800px) { .section .extraRow { grid-template-columns: 1fr 1fr; }.extraRow>label:first-child { grid-column: 1 / -1; } }
+@media(max-width: 550px) { .section .flowerRow { grid-template-columns: 1fr 1fr; }.flowerRow>label:first-child { grid-column: 1 / -1; }.section input,.section select { font-size: 16px; } }
