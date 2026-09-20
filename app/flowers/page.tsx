@@ -1,10 +1,11 @@
+import { pageMetadata } from '@/lib/site-seo';
 import type { Metadata } from 'next';
 import ServicePage from '../public/service-page';
-export const metadata: Metadata = { title: "Everyday & Regular Flowers", description: "A thank you, a celebration or simply something lovely for the room. Seasonal flowers, arranged with the same care as every occasion we create for.", alternates: { canonical: '/flowers' } };
+export const metadata = pageMetadata('/flowers');
 const content = {
-  "title": "For the moments in between.",
+  "title": "Seasonal bouquets in Southampton.",
   "label": "EVERYDAY & REGULAR FLOWERS",
-  "intro": "A thank you, a celebration or simply something lovely for the room. Seasonal flowers, arranged with the same care as every occasion we create for.",
+  "intro": "Flowers from our Southampton studio for a thank you, a celebration or simply something lovely for the room. Seasonal flowers, arranged with the same care as every occasion we create for.",
   "image": "/assets/studio-work-2.jpg",
   "alt": "Hand-tied white flowers and eucalyptus prepared in the studio",
   "occasion": "Everyday flowers",
@@ -26,4 +27,4 @@ const content = {
     }
   ]
 };
-export default function Page() { return <ServicePage content={content}></ServicePage>; }
+export default function Page() { return <ServicePage content={content} path='/flowers'></ServicePage>; }

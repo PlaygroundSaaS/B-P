@@ -1,7 +1,8 @@
+import { pageMetadata } from '@/lib/site-seo';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { PublicPage, PhotoFrame, TextLink } from '../public/components';
-export const metadata: Metadata = { title: 'Your Client Studio', description: 'Begin a flower consultation with Bramble & Petal, or return to your private floral proposal.', alternates: {canonical:'/client-studio'} };
+export const metadata = pageMetadata('/client-studio');
 const occasions = [{name:'Your wedding',value:'Wedding',text:'The day, the colours and the details that feel like you.'},{name:'A personal tribute',value:'Funeral flowers',text:'Thoughtful flowers and practical guidance, at your pace.'},{name:'Your business',value:'Corporate event',text:'Spaces, gatherings and flowers that work with your brand.'},{name:'Regular flowers',value:'Everyday flowers',text:'Seasonal arrangements for home, work or someone special.'}];
 export default async function Page({searchParams}:{searchParams:Promise<{occasion?:string}>}) {
  const params = await searchParams; const selected = occasions.find(item=>item.value===params.occasion);

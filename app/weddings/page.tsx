@@ -1,12 +1,13 @@
+import { pageMetadata } from '@/lib/site-seo';
 import type { Metadata } from 'next';
 import ServicePage from '../public/service-page';
 import WeddingGallery from '../wedding-gallery';
 import { weddingImages } from '../public/wedding-images';
-export const metadata: Metadata = { title: "The Wedding Collection", description: "From the bouquet in your hands to the flowers that welcome your guests. Designed around your venue, your season and your way of celebrating.", alternates: { canonical: '/weddings' } };
+export const metadata = pageMetadata('/weddings');
 const content = {
-  "title": "Wedding flowers, entirely yours.",
+  "title": "Wedding flowers in Southampton & Hampshire.",
   "label": "THE WEDDING COLLECTION",
-  "intro": "From the bouquet in your hands to the flowers that welcome your guests. Designed around your venue, your season and your way of celebrating.",
+  "intro": "From our Southampton studio to wedding venues across Hampshire, we create flowers around your day. From the bouquet in your hands to the flowers that welcome your guests. Designed around your venue, your season and your way of celebrating.",
   "image": "/assets/weddings/bridal-party-bouquets.webp",
   "alt": "Bride and bridesmaid holding coordinating Bramble & Petal bouquets",
   "occasion": "Wedding",
@@ -30,4 +31,4 @@ const content = {
     }
   ]
 };
-export default function Page() { return <ServicePage content={content}><section className="public-wrap public-full-portfolio"><p className="public-kicker">REAL WEDDINGS, REAL DETAILS</p><h2>A closer look at our work.</h2><WeddingGallery images={weddingImages} showCaptions={false}/></section></ServicePage>; }
+export default function Page() { return <ServicePage content={content} path='/weddings'><section className="public-wrap public-full-portfolio"><p className="public-kicker">REAL WEDDINGS, REAL DETAILS</p><h2>A closer look at our work.</h2><WeddingGallery images={weddingImages} showCaptions={false}/></section></ServicePage>; }

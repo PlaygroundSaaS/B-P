@@ -1,10 +1,11 @@
+import { pageMetadata } from '@/lib/site-seo';
 import type { Metadata } from 'next';
 import ServicePage from '../public/service-page';
-export const metadata: Metadata = { title: "Inside Bramble & Petal", description: "A place for conversations, seasonal flowers and careful making. Jade brings your ideas together, from the first inspiration to the final arrangement.", alternates: { canonical: '/our-studio' } };
+export const metadata = pageMetadata('/our-studio');
 const content = {
-  "title": "From our hands, to your moments.",
+  "title": "Meet Jade, your Southampton florist.",
   "label": "INSIDE BRAMBLE & PETAL",
-  "intro": "A place for conversations, seasonal flowers and careful making. Jade brings your ideas together, from the first inspiration to the final arrangement.",
+  "intro": "Our Southampton studio is a place for conversations, seasonal flowers and careful making. Jade brings your ideas together, from the first inspiration to the final arrangement.",
   "image": "/assets/weddings/creating-wedding-flowers.webp",
   "alt": "Florist arranging wedding flowers by hand in the studio",
   "occasion": "Other",
@@ -28,4 +29,4 @@ const content = {
     }
   ]
 };
-export default function Page() { return <ServicePage content={content}></ServicePage>; }
+export default function Page() { return <ServicePage content={content} path='/our-studio'></ServicePage>; }

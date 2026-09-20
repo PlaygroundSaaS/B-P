@@ -1,4 +1,7 @@
 import type { MetadataRoute } from 'next';
+import { SITE_URL } from '@/lib/site-seo';
 export default function robots(): MetadataRoute.Robots {
-  return { rules: { userAgent: '*', allow: '/', disallow: ['/studio', '/api/', '/client$', '/client?', '/review'] }, sitemap: 'https://www.bramblesandpetals.co.uk/sitemap.xml' };
+  // Private pages carry noindex and require authentication. Allow crawlers to read
+  // that directive rather than leaving blocked URLs eligible for URL-only results.
+  return { rules: { userAgent: '*', allow: '/', disallow: ['/api/'] }, sitemap: `${SITE_URL}/sitemap.xml` };
 }

@@ -1,2 +1,5 @@
 import type { MetadataRoute } from 'next';
-export default function sitemap(): MetadataRoute.Sitemap { return ['', '/weddings', '/funerals', '/corporate', '/flowers', '/our-studio', '/client-studio', '/contact', '/privacy'].map(path=>({url:`https://www.bramblesandpetals.co.uk${path}`,changeFrequency:'monthly',priority:path ? 0.7 : 1})); }
+import { SITE_URL, publicPages } from '@/lib/site-seo';
+export default function sitemap(): MetadataRoute.Sitemap {
+  return Object.entries(publicPages).map(([path, page]) => ({ url: `${SITE_URL}${path === '/' ? '/' : path}`, images: [`${SITE_URL}${page.image}`] }));
+}

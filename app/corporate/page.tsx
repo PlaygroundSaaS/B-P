@@ -1,10 +1,11 @@
+import { pageMetadata } from '@/lib/site-seo';
 import type { Metadata } from 'next';
 import ServicePage from '../public/service-page';
-export const metadata: Metadata = { title: "Corporate & Hospitality", description: "For the first impression, the gathering and the everyday. Floral design considered around your space, your brand and the people who use it.", alternates: { canonical: '/corporate' } };
+export const metadata = pageMetadata('/corporate');
 const content = {
-  "title": "Flowers for welcoming spaces.",
+  "title": "Corporate & event flowers.",
   "label": "CORPORATE & HOSPITALITY",
-  "intro": "For the first impression, the gathering and the everyday. Floral design considered around your space, your brand and the people who use it.",
+  "intro": "Floral design for businesses and events across Southampton and Hampshire. For the first impression, the gathering and the everyday. Floral design considered around your space, your brand and the people who use it.",
   "occasion": "Corporate event",
   "closing": "Let’s talk about your space.",
   "sections": [
@@ -22,4 +23,4 @@ const content = {
     }
   ]
 };
-export default function Page() { return <ServicePage content={content}></ServicePage>; }
+export default function Page() { return <ServicePage content={content} path='/corporate'></ServicePage>; }

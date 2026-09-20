@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { captureWebsiteEnquiry } from '@/lib/website-enquiry';
 import { NextResponse } from 'next/server';
 import { readJsonObject, requireSameOrigin, RequestError } from '@/lib/request-body';
@@ -30,11 +31,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Please enter your name, a valid email address and your enquiry.' }, { status: 400 });
   }
 
+  const captured = await captureWebsiteEnquiry({ name, email, phone, occasion, eventDate, location, message });
+  if (!captured) return NextResponse.json({ error: 'We could not save your enquiry just now. Your details are still here; please try again or email info@bramblesandpetals.co.uk.' }, { status: 503 });
+  const received = () => NextResponse.json({ message: 'Thank you — your enquiry has been received by our studio. We’ll be in touch soon.' });
+
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.RESEND_FROM_EMAIL;
   const to = process.env.ENQUIRY_TO_EMAIL || 'info@bramblesandpetals.co.uk';
   if (!apiKey || !from) {
-    return NextResponse.json({ error: 'The enquiry service is not ready yet. Please email info@bramblesandpetals.co.uk directly.' }, { status: 503 });
+    console.warn('[enquiry] Saved to Studio; email notification is not configured.');
+    return received();
   }
 
   const optionalDetails = [
@@ -47,19 +53,18 @@ export async function POST(request: Request) {
   try { response = await fetch('https://api.resend.com/emails', {
     signal: AbortSignal.timeout(15000),
     method: 'POST',
-    headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+    headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json', 'Idempotency-Key': `enquiry-${createHash('sha256').update(JSON.stringify({ name, email, phone, occasion, eventDate, location, message, date: new Date().toISOString().slice(0, 10) })).digest('hex')}` },
     body: JSON.stringify({ from, to: [to], reply_to: email, subject: `Website enquiry — ${occasion} — ${name}`, html }),
   }); } catch {
-    return NextResponse.json({ error: 'We could not confirm delivery. Please email info@bramblesandpetals.co.uk if you need help.' }, { status: 502 });
+    console.warn('[enquiry] Saved to Studio; email notification timed out or failed.');
+    return received();
   }
 
   if (!response.ok) {
-    console.error('Enquiry delivery failed', response.status);
-    return NextResponse.json({ error: 'We could not send your enquiry just now. Please try again or email us directly.' }, { status: 502 });
+    console.warn('[enquiry] Saved to Studio; email notification failed', response.status);
+    return received();
   }
 
-  const captured = await captureWebsiteEnquiry({ name, email, phone, occasion, eventDate, location, message });
-  if (!captured) console.error('[enquiry] Email delivered; Studio lead capture unavailable.');
-  return NextResponse.json({ message: 'Thank you — your enquiry has been sent. We’ll be in touch soon.' });
+  return received();
 }
 

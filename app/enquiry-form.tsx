@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect, useRef, useState } from 'react';
 
 const occasionDetails: Record<string, { prompt: string; placeholder: string }> = {
   Wedding: {
@@ -30,6 +30,7 @@ export default function EnquiryForm({ initialOccasion = 'Wedding' }: { initialOc
   const [occasion, setOccasion] = useState(defaultOccasion);
   const [status, setStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const inFlight = useRef(false);
   useEffect(() => {
     const choose = (event: Event) => { const value = (event as CustomEvent<string>).detail; if (occasionDetails[value]) { setOccasion(value); setStatus(null); } };
     window.addEventListener('enquiry-occasion', choose);
@@ -39,6 +40,9 @@ export default function EnquiryForm({ initialOccasion = 'Wedding' }: { initialOc
 
   async function sendEnquiry(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (inFlight.current) return;
+    inFlight.current = true;
+    const payload = Object.fromEntries(new FormData(event.currentTarget));
     setSubmitting(true);
     setStatus(null);
     const form = event.currentTarget;
@@ -47,7 +51,7 @@ export default function EnquiryForm({ initialOccasion = 'Wedding' }: { initialOc
       const response = await fetch('/api/enquiry', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(Object.fromEntries(new FormData(form))),
+        body: JSON.stringify(payload),
       });
       const contentType = response.headers.get('content-type') || '';
       const result = contentType.includes('application/json')
@@ -60,6 +64,7 @@ export default function EnquiryForm({ initialOccasion = 'Wedding' }: { initialOc
     } catch (caught) {
       setStatus({ type: 'error', message: caught instanceof Error ? caught.message : 'We could not send your enquiry. Please try again or email us directly.' });
     } finally {
+      inFlight.current = false;
       setSubmitting(false);
     }
   }

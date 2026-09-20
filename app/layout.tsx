@@ -1,3 +1,4 @@
+import { SITE_URL } from '@/lib/site-seo';
 import type { Metadata } from 'next';
 import './globals.css';
 import './enquiry-form.css';
@@ -7,15 +8,9 @@ import './atelier.css';
 import './public-site.css';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://www.bramblesandpetals.co.uk'),
-  title: { default: 'Bramble & Petal | Florist Studio', template: '%s | Bramble & Petal' },
-  description: 'Thoughtful, seasonal flowers for weddings, farewells, events and meaningful everyday moments.',
-  openGraph: {
-    title: 'Bramble & Petal Florist Studio',
-    description: 'Thoughtful, seasonal flowers for weddings, farewells, events and meaningful everyday moments.',
-    type: 'website',
-    images: [{ url: '/assets/weddings/ceremony-celebration.webp', width: 678, height: 1030, alt: 'Wedding flowers by Bramble & Petal in a light-filled ceremony room' }],
-  },
+  metadataBase: new URL(SITE_URL),
+  title: { default: 'Bramble & Petal | Southampton Florist', template: '%s | Bramble & Petal' },
+  description: 'Southampton florist creating wedding flowers, funeral tributes, seasonal bouquets and corporate arrangements.',
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

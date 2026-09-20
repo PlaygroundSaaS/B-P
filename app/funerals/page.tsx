@@ -1,10 +1,11 @@
+import { pageMetadata } from '@/lib/site-seo';
 import type { Metadata } from 'next';
 import ServicePage from '../public/service-page';
-export const metadata: Metadata = { title: "Funeral & Sympathy Flowers", description: "A personal tribute, thoughtfully made. We\u2019ll help you choose flowers that reflect the person being remembered and arrange the practical details with care.", alternates: { canonical: '/funerals' } };
+export const metadata = pageMetadata('/funerals');
 const content = {
-  "title": "Flowers created with care.",
+  "title": "Funeral flowers, created with care.",
   "label": "FUNERAL & SYMPATHY FLOWERS",
-  "intro": "A personal tribute, thoughtfully made. We’ll help you choose flowers that reflect the person being remembered and arrange the practical details with care.",
+  "intro": "Personal funeral flowers for Southampton and Hampshire, thoughtfully made. We’ll help you choose flowers that reflect the person being remembered and arrange the practical details with care.",
   "image": "/assets/sympathy-spray.jpg",
   "alt": "White and green floral spray made by Bramble & Petal",
   "occasion": "Funeral flowers",
@@ -26,4 +27,4 @@ const content = {
     }
   ]
 };
-export default function Page() { return <ServicePage content={content}></ServicePage>; }
+export default function Page() { return <ServicePage content={content} path='/funerals'></ServicePage>; }

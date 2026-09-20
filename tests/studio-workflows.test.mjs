@@ -70,10 +70,10 @@ test('revision conflicts return 409 instead of overwriting another edit',async()
   const response=await api.PUT(new Request('https://example.test/api/studio',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({data:sample(),expectedUpdatedAt:'2026-09-05T10:00:00Z'})}));
   assert.equal(response.status,409);assert.equal(committed,false);
 });
-test('enquiry handles email-provider network failure with a usable response',async()=>{
+test('enquiry acknowledges persisted lead despite email-provider network failure',async()=>{
   const oldFetch=globalThis.fetch;const oldKey=process.env.RESEND_API_KEY;const oldFrom=process.env.RESEND_FROM_EMAIL;
   process.env.RESEND_API_KEY='local-test';process.env.RESEND_FROM_EMAIL='test@example.test';globalThis.fetch=async()=>{throw Error('offline')};
-  try {const api=load('app/api/enquiry/route.ts');const response=await api.POST(new Request('https://example.test/api/enquiry',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({name:'Test',email:'test@example.test',occasion:'Wedding',message:'Local test only'})}));assert.equal(response.status,502);assert.match((await response.json()).error,/confirm delivery/);}
+  try {const api=load('app/api/enquiry/route.ts',{'@/lib/website-enquiry':{captureWebsiteEnquiry:async()=>true}});const response=await api.POST(new Request('https://example.test/api/enquiry',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({name:'Test',email:'test@example.test',occasion:'Wedding',message:'Local test only'})}));assert.equal(response.status,200);assert.match((await response.json()).message,/received by our studio/);}
   finally {globalThis.fetch=oldFetch;if(oldKey===undefined)delete process.env.RESEND_API_KEY;else process.env.RESEND_API_KEY=oldKey;if(oldFrom===undefined)delete process.env.RESEND_FROM_EMAIL;else process.env.RESEND_FROM_EMAIL=oldFrom;}
 });
 const { studioInsights } = load('lib/studio-insights.ts');

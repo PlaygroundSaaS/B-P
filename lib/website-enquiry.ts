@@ -3,7 +3,7 @@ import { createStudioDatabaseClient } from './studio-database';
 import { readWorkspace, commitWorkspace, commandHash } from './studio-command-server';
 import { emptyOperations, type Lead } from './operations-types';
 import { RequestError } from './request-body';
-/** Capture a delivered website enquiry without duplicating a visitor's immediate retries. */
+/** Persist a website enquiry before any optional email notification without duplicating a visitor's immediate retries. */
 export async function captureWebsiteEnquiry(input: { name: string; email: string; phone: string; occasion: string; eventDate: string; location: string; message: string }) {
   const db = createStudioDatabaseClient(); if (!db) return false;
   const date = new Date().toISOString().slice(0, 10); const id = `website-${createHash('sha256').update(JSON.stringify({ ...input, date })).digest('hex').slice(0, 24)}`;
