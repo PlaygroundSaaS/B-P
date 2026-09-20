@@ -5,7 +5,7 @@ import { StudioBrand, StudioIcon, type IconName } from './design-system';
 
 type Action = { label: string; icon: IconName; run: () => void };
 type Props = { mode: 'business' | 'client'; tab: string; busy: boolean; saveState: string; onMode: (mode: 'business' | 'client') => void; navigate: (tab: string) => void; signOut: () => void; actions: Action[]; search: ReactNode; clientNavigation: ReactNode };
-const primary: [string, string, IconName][] = [['dashboard','Home','home'],['calendar','Calendar','calendar'],['clients','Clients','clients'],['events','Events','events'],['calculator','Recipes','flower'],['inventory','Flowers','flower'],['jobs','Orders','orders'],['suppliers','Suppliers','suppliers'],['financial','Finance','finance']];
+const primary: [string, string, IconName][] = [['dashboard','Home','home'],['calendar','Calendar','calendar'],['clients','Clients','clients'],['reviews','Reviews','clients'],['events','Events','events'],['calculator','Recipes','flower'],['inventory','Flowers','flower'],['jobs','Orders','orders'],['suppliers','Suppliers','suppliers'],['financial','Finance','finance']];
 const secondary = [['funerals','Funeral plans'],['recurring','Routine flowers'],['catalogue','Inspiration catalogue'],['production','Production'],['deliveries','Deliveries & setup'],['hire','Hire items'],['payments','Payments'],['insights','Flower & waste insights'],['leads','Enquiries'],['tasks','Tasks'],['templates','Recipe library'],['assistant','AI assistant'],['activity','Activity history']];
 export default function StudioNavigation({ mode, tab, busy, saveState, onMode, navigate, signOut, actions, search, clientNavigation }: Props) {
   const [menu, setMenu] = useState(false); const [creating, setCreating] = useState(false);
