@@ -8,5 +8,7 @@
 .advanced { margin: 24px 0; border-top: 1px solid #dce0d4; padding-top: 16px; }
 .advanced summary { cursor: pointer; padding: 8px 0; font-size: 13px; color: #526247; }
 .advanced p { font-size: 13px; }
-@media(max-width: 900px) { .quickForm fieldset { grid-template-columns: 1fr 1fr; }.quickForm label:first-child { grid-column: 1 / -1; }.quickForm button { grid-column: 1 / -1; margin-top: 0; } }
+@media(max-width: 900px) { .quickForm fieldset { grid-template-columns: 1fr 1fr; }.quickForm fieldset>div:first-child { grid-column: 1 / -1; }.quickForm button { grid-column: 1 / -1; margin-top: 0; } }
 @media(max-width: 450px) { .quickForm fieldset { grid-template-columns: 1fr; }.quickForm input { font-size: 16px; } }
+
+.stockName{display:flex;align-items:center;gap:10px}
