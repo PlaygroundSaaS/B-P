@@ -1,6 +1,7 @@
 import { generateText, jsonSchema, Output } from 'ai';
 import type { SupplierInvoiceDraft } from '@/lib/supplier-invoices';
 import { INVOICE_MODEL, normaliseInvoiceDraft } from '@/lib/supplier-invoice-server';
+import { estimateAiCostUsd } from '@/lib/ai-cost';
 
 const text = { type: 'string' } as const;
 const nullableNumber = { type: ['number', 'null'] } as const;
@@ -42,5 +43,5 @@ include=true for flowers/foliage only. Sundries remain as lines with include=fal
   });
   return { draft: normaliseInvoiceDraft(result.output), usage: result.usage,
     // Catalogue list-price estimate, not a bill; excludes cache discounts.
-    estimatedCostUsd: (result.usage.inputTokens ?? 0) * 0.000002 + (result.usage.outputTokens ?? 0) * 0.00001 };
+    estimatedCostUsd: estimateAiCostUsd(result.usage) };
 }

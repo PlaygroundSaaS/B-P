@@ -4,7 +4,7 @@ import { commandHash, commitWorkspace, readWorkspace } from '@/lib/studio-comman
 import { stockSummary } from '@/lib/studio-commands';
 import { emptyOperations } from '@/lib/operations-types';
 import { readJsonObject, requireSameOrigin, RequestError } from '@/lib/request-body';
-import { isStudioData } from '@/lib/studio-validation';
+import { addsInlineImages, isStudioData } from '@/lib/studio-validation';
 const json: typeof NextResponse.json = (body, init) => NextResponse.json(body, { ...init, headers: { ...init?.headers, 'Cache-Control': 'private, no-store' } });
 import { blankData, reviveData } from '@/lib/studio-data';
 import { hasStudioSession } from '@/lib/studio-auth';
@@ -59,6 +59,7 @@ export async function PUT(request: Request) {
     const incoming = reviveData(body.data);
     const expectedUpdatedAt = body.expectedUpdatedAt as string | null;
     const current = await readWorkspace(supabase);
+    if (addsInlineImages(current.data, incoming)) throw new RequestError('Upload photographs with the photo button so they are stored safely, then save again.');
     if (current.updatedAt !== expectedUpdatedAt) throw new RequestError('The Studio changed. Load the latest records before saving.', 409);
     const protectedKeys = ['eventQuotes', 'payments', 'hireReservations'] as const;
     const currentOps = { ...emptyOperations(), ...current.data.operations };

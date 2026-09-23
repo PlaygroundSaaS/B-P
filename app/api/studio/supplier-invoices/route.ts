@@ -3,6 +3,7 @@ import { STUDIO_WORKSPACE } from '@/lib/studio-database';
 import { MAX_INVOICE_BYTES } from '@/lib/supplier-invoices';
 import { boundedBody, imageMediaType, INVOICE_BUCKET, INVOICE_MODEL, InvoiceError, invoiceAccess, invoiceFailure, invoiceJson, publicInvoice } from '@/lib/supplier-invoice-server';
 import { readSupplierInvoice } from '@/lib/supplier-invoice-reader';
+import { redactedAiError } from '@/lib/ai-cost';
 
 export const runtime = 'nodejs';
 export const maxDuration = 120;
@@ -62,7 +63,8 @@ export async function POST(request: Request) {
       }).eq('id', invoiceId).eq('workspace_key', STUDIO_WORKSPACE).eq('status', 'processing').eq('attempts', row.attempts).select('*').single();
       if (saveError) throw saveError;
       return invoiceJson({ invoice: publicInvoice(saved) });
-    } catch {
+    } catch (scanError) {
+      console.error('[supplier-invoices] Invoice scan failed', { invoiceId, ...redactedAiError(scanError) });
       const message = 'The photograph could not be read. Check AI Gateway access and the database connection, then upload it again. No stock was added.';
       await database.from('supplier_invoice_imports').update({ status: 'failed', error_message: message, updated_at: new Date().toISOString() })
         .eq('id', invoiceId).eq('workspace_key', STUDIO_WORKSPACE).eq('status', 'processing').eq('attempts', row.attempts);

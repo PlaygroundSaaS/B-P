@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { readJsonObject, requireSameOrigin, RequestError } from '@/lib/request-body';
 import { createStudioSession, studioLoginConfigured, studioSessionCookie, validStudioCredentials } from '@/lib/studio-auth';
+import { loginAllowed, recordLoginFailure } from '@/lib/rate-limit';
 
 export const runtime = 'nodejs';
 
@@ -20,7 +21,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Studio login has not been configured yet.' }, { status: 503 });
   }
 
+  if (!(await loginAllowed(request))) {
+    return NextResponse.json({ error: 'Too many sign-in attempts. Please wait 15 minutes and try again.' }, { status: 429, headers: { 'Retry-After': '900' } });
+  }
+
   if (!validStudioCredentials(username, password)) {
+    await recordLoginFailure(request);
     return NextResponse.json({ error: 'That username or password is not correct.' }, { status: 401 });
   }
 
