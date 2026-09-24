@@ -7,7 +7,11 @@ export function requireSameOrigin(request: Request) {
   const url = new URL(request.url);
   // Next may construct a localhost URL behind a proxy; Host is the incoming site.
   const expected = `${url.protocol}//${request.headers.get('host') || url.host}`;
-  if ((origin && origin !== expected) || request.headers.get('sec-fetch-site') === 'cross-site') {
+  const fetchSite = request.headers.get('sec-fetch-site');
+  // Browsers always send Origin (or Sec-Fetch-Site) with form and fetch submissions.
+  // Requests with neither come from scripts, so writes without them are refused.
+  const write = !['GET', 'HEAD'].includes(request.method.toUpperCase());
+  if ((origin && origin !== expected) || fetchSite === 'cross-site' || (write && !origin && fetchSite !== 'same-origin')) {
     throw new RequestError('Please submit this request from the website.', 403);
   }
 }

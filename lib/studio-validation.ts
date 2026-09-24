@@ -21,8 +21,19 @@ export function isStudioData(value: unknown): value is StudioData {
   if (!data.jobs.every(row => record(row.totals) && Object.values(row.totals).every(value => typeof value === 'number' && Number.isFinite(value)))) return false;
   if (!data.plans.every(row => typeof row.clientName === 'string' && typeof row.notes === 'string' && (!row.references || (Array.isArray(row.references) && row.references.every(image => record(image) && typeof image.dataUrl === 'string'))))) return false;
   if (!data.weddingBuilds.every(row => typeof row.clientName === 'string' && Array.isArray(row.inventory) && Array.isArray(row.arrangements) && Array.isArray(row.materials) && row.inventory.every(flower => record(flower) && [flower.costPerStem, flower.purchases, flower.stemsPerPurchase].every(nonnegative)) && row.materials.every(material => record(material) && [material.unitCost, material.quantity].every(nonnegative)) && row.arrangements.every(arrangement => record(arrangement) && nonnegative(arrangement.quantity) && Array.isArray(arrangement.flowers) && arrangement.flowers.every(flower => record(flower) && nonnegative(flower.stemsPerArrangement))) && nonnegative(row.markupPercent) && nonnegative(row.vatRate))) return false;
-  if (!data.plans.every(plan => !plan.setupOptions || (Array.isArray(plan.setupOptions) && plan.setupOptions.every(option => record(option) && typeof option.id === 'string' && typeof option.title === 'string' && typeof option.description === 'string' && typeof option.selected === 'boolean' && Number.isInteger(option.quantity) && option.quantity > 0 && (option.unitPrice === null || nonnegative(option.unitPrice)) && (option.photoSrc === '' || (typeof option.photoSrc === 'string' && option.photoSrc.length <= 1_500_000 && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(option.photoSrc)) || /^\/assets\/weddings\/wedding-(02|03|04|05|07|09)\.jpg$/.test(option.photoSrc)))))) return false;
+  if (!data.plans.every(plan => !plan.setupOptions || (Array.isArray(plan.setupOptions) && plan.setupOptions.every(option => record(option) && typeof option.id === 'string' && typeof option.title === 'string' && typeof option.description === 'string' && typeof option.selected === 'boolean' && Number.isInteger(option.quantity) && option.quantity > 0 && (option.unitPrice === null || nonnegative(option.unitPrice)) && (option.photoSrc === '' || (typeof option.photoSrc === 'string' && option.photoSrc.length <= 1_500_000 && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(option.photoSrc)) || /^\/assets\/weddings\/wedding-(02|03|04|05|07|09)\.jpg$/.test(option.photoSrc) || /^\/api\/studio\/assets\/[a-f0-9-]{36}$/.test(option.photoSrc)))))) return false;
   return validOperations(data);
 }
 
 function nonnegative(value: unknown) { return typeof value === 'number' && Number.isFinite(value) && value >= 0; }
+
+const inlineImages = (data: StudioData) => data.plans.flatMap(plan => [
+  ...(plan.references || []).map(reference => reference.dataUrl),
+  ...(plan.setupOptions || []).map(option => option.photoSrc),
+]).filter((url): url is string => typeof url === 'string' && url.startsWith('data:'));
+
+/** Photos belong in private Storage. Older records may keep inline images, but a save may not add new ones. */
+export function addsInlineImages(current: StudioData, incoming: StudioData) {
+  const existing = new Set(inlineImages(current));
+  return inlineImages(incoming).some(url => !existing.has(url));
+}

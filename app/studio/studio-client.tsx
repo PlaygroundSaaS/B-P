@@ -37,25 +37,36 @@ const blankQuote = (settings: StudioData['settings']): Quote => ({ id: id(), nam
 const n = (value: string) => Number.isFinite(Number(value)) ? Number(value) : 0;
 type InvoicePreview = { number: string; clientName: string; contact?: string; occasion: string; date: string; lines: { description: string; quantity: number; total: number }[]; subtotal: number; vat: number; total: number };
 const blankWeddingBuild = (plan: WeddingPlan, settings: StudioData['settings']): WeddingBuild => ({ id: id(), planId: plan.id, clientName: plan.clientName, arrangements: [], inventory: [], materials: (plan.materialsNeeded || []).map(material => ({ id: id(), name: material.name, quantity: material.quantity, unitCost: 0 })), markupPercent: settings.defaultMarkup, vatRate: settings.vatRate, updatedAt: new Date().toISOString() });
-const makePlanReference = (file: File): Promise<PlanReferenceImage> => new Promise((resolve, reject) => {
+// Resize in the browser, then store the photograph in private Supabase Storage.
+// Only the short asset URL is kept in the Studio record, so photos never bloat
+// the shared workspace (which every save sends and the audit log copies).
+const resizePlanReference = (file: File): Promise<Blob> => new Promise((resolve, reject) => {
   const reader = new FileReader();
   reader.onerror = () => reject(new Error('The image could not be read.'));
   reader.onload = () => {
     const photo = new globalThis.Image();
     photo.onerror = () => reject(new Error('The image could not be prepared.'));
     photo.onload = () => {
-      const scale = Math.min(1, 900 / Math.max(photo.width, photo.height));
+      const scale = Math.min(1, 1400 / Math.max(photo.width, photo.height));
       const canvas = document.createElement('canvas');
       canvas.width = Math.round(photo.width * scale); canvas.height = Math.round(photo.height * scale);
       const context = canvas.getContext('2d');
       if (!context) return reject(new Error('The image could not be prepared.'));
       context.drawImage(photo, 0, 0, canvas.width, canvas.height);
-      resolve({ id: id(), name: file.name, dataUrl: canvas.toDataURL('image/jpeg', .78) });
+      canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('The image could not be prepared.')), 'image/jpeg', .82);
     };
     photo.src = String(reader.result);
   };
   reader.readAsDataURL(file);
 });
+const makePlanReference = async (file: File): Promise<PlanReferenceImage> => {
+  const form = new FormData();
+  form.append('file', await resizePlanReference(file), `${file.name.replace(/\.[^.]+$/, '') || 'reference'}.jpg`);
+  const response = await fetch('/api/studio/assets', { method: 'POST', body: form });
+  const result = await response.json().catch(() => ({})) as { asset?: { id: string; url: string }; error?: string };
+  if (!response.ok || !result.asset) throw new Error(result.error || `${file.name} could not be uploaded.`);
+  return { id: result.asset.id, name: file.name, dataUrl: result.asset.url };
+};
 
 export default function StudioClient() {
   const workspaceNav = useRef<HTMLElement>(null);
@@ -411,11 +422,18 @@ export default function StudioClient() {
     const selected = Array.from(event.target.files || []).filter(file => file.type.startsWith('image/')).slice(0, Math.max(0, 8 - planReferences.length));
     event.target.value = '';
     if (selected.length === 0) return;
+    setMessage(`Uploading ${selected.length} reference photo${selected.length === 1 ? '' : 's'}…`);
+    const prepared: PlanReferenceImage[] = [];
     try {
-      const prepared = await Promise.all(selected.map(makePlanReference));
-      setPlanReferences(current => [...current, ...prepared].slice(0, 8)); plannerDirty.current = true;
+      for (const file of selected) prepared.push(await makePlanReference(file));
       setError('');
-    } catch { setError('One of the reference images could not be prepared.'); }
+      setMessage('Reference photos uploaded. Save the plan to keep them.');
+    } catch (caught) {
+      setMessage('');
+      setError(caught instanceof Error ? caught.message : 'One of the reference images could not be uploaded.');
+    } finally {
+      if (prepared.length) { setPlanReferences(current => [...current, ...prepared].slice(0, 8)); plannerDirty.current = true; }
+    }
   };
   const updatePlanReference = (referenceId: string, caption: string) => setPlanReferences(current => current.map(reference => reference.id === referenceId ? { ...reference, caption } : reference));
   const removePlanReference = (referenceId: string) => setPlanReferences(current => current.filter(reference => reference.id !== referenceId));
@@ -508,7 +526,7 @@ export default function StudioClient() {
             <div className="reference-heading"><div><h2>4. Inspiration &amp; reference images</h2><p>Save up to eight client-supplied ideas with a note on what they love about each one.</p></div><label className="reference-upload">+ Add reference images<input type="file" accept="image/*" multiple onChange={addPlanReferences} disabled={planReferences.length >= 8} /></label></div>
             {planReferences.length > 0 ? <div className="reference-grid">{planReferences.map(reference => <article key={reference.id}><Image src={reference.dataUrl} alt={reference.caption || reference.name} width={180} height={135} unoptimized /><label>What should we take from this?<input value={reference.caption || ''} placeholder="e.g. colour, shape, texture" onChange={event => updatePlanReference(reference.id, event.target.value)} /></label><button type="button" onClick={() => removePlanReference(reference.id)}>Remove</button></article>)}</div> : <p className="reference-empty">No images yet — upload flower, colour, table-setting or venue ideas from the client.</p>}
           </section>
-          <section><h2>{clientType === 'Funeral' ? '5. Family notes & next steps' : clientType === 'Corporate' ? '5. Approval & next steps' : '5. Personal details & next steps'}</h2><label>{clientType === 'Funeral' ? 'Personal memories, display wishes and follow-up actions' : clientType === 'Corporate' ? 'Approvals, delivery contact and operational notes' : 'Story, inspiration and must-haves'}<textarea name="notes" placeholder={clientType === 'Funeral' ? 'Personal details, preferred tribute display, collection wishes and any follow-up…' : clientType === 'Corporate' ? 'Brand approvals, stakeholders, delivery contact and practical notes…' : 'Style, venue details, sentimental blooms, practical needs, priorities and follow-up actions…'} /></label><label>Finished estimate to show client (£)<input name="estimate" type="number" min="0" step="0.01" /></label></section>
+          <section><h2>{clientType === 'Funeral' ? '5. Family notes & next steps' : clientType === 'Corporate' ? '5. Approval & next steps' : '5. Personal details & next steps'}</h2><label>{clientType === 'Funeral' ? 'Personal memories and display wishes' : clientType === 'Corporate' ? 'Approvals, delivery contact and practical details' : 'Story, inspiration and must-haves'} <small>(shared with the client in their plan)</small><textarea name="notes" placeholder={clientType === 'Funeral' ? 'Personal details, preferred tribute display and collection wishes…' : clientType === 'Corporate' ? 'Brand approvals, stakeholders, delivery contact and practical notes…' : 'Style, venue details, sentimental blooms, practical needs and priorities…'} /><small>The client can see and edit this text. Keep private notes in Internal consultation notes on the event page.</small></label><label>Finished estimate to show client (£)<input name="estimate" type="number" min="0" step="0.01" /></label></section>
           {clientType === 'Wedding' && <section className="plan-setup-section"><SetupOptions references={planReferences} options={planSetupOptions} onChange={options => { setPlanSetupOptions(options); plannerDirty.current = true; }} />{planSetupOptions.length > 0 && <button type="button" onClick={() => setSetupEditor({ client: 'Your wedding', options: planSetupOptions, presentation: true })}>Preview with client ↗</button>}</section>}
           <section><h2>Inspiration &amp; consultation estimate</h2><CatalogueBrowse items={data.operations?.catalogue || []} occasion={clientType} onSelect={(item, quantity) => { plannerDirty.current = true; setPlanInspiration(current => [...current, { id: id(), inspirationId: item.id, name: item.name, category: item.category, image: item.images[0]?.url || '', description: item.description, quantity, priceFrom: item.priceFrom, priceTo: item.priceTo, palette: item.palette, notes: '' }]); }} />{planInspiration.map(item => <p key={item.id}>{item.quantity} × {item.name} · {money(item.priceFrom * item.quantity)}–{money(item.priceTo * item.quantity)} <button type="button" onClick={() => setPlanInspiration(current => current.filter(i => i.id !== item.id))}>Remove</button></p>)}{planInspiration.length > 0 && <div className="ops-estimate-total"><span>Estimated floral budget</span><strong>{money(planInspiration.reduce((s, i) => s + i.priceFrom * i.quantity, 0))}–{money(planInspiration.reduce((s, i) => s + i.priceTo * i.quantity, 0))}</strong></div>}</section>
           <details><summary>Consultation, venue &amp; delivery details</summary><Fields value={planDetails} onChange={setPlanDetails} fields={[{key:'ceremonyTime', label:'Ceremony / service time', type:'time'}, {key:'ceremonyVenue',label:'Ceremony venue'}, {key:'receptionVenue',label:'Reception venue'}, {key:'weddingParty',label:'Wedding party'}, {key:'theme',label:'Style / theme'}, {key:'funeralDirectorContact',label:'Funeral director contact'}, {key:'deliveryDeadline',label:'Delivery deadline',type:'time'}, {key:'deliveryRequirements',label:'Delivery requirements',type:'textarea'}, {key:'collectionTime',label:'Collection time',type:'time'}]} /></details>

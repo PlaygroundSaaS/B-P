@@ -23,8 +23,8 @@ export function pageMetadata(path: PublicPath): Metadata {
   };
 }
 export const businessSchema = { '@context': 'https://schema.org', '@graph': [
-  { '@type': 'Organization', '@id': BUSINESS_ID, name: BUSINESS_NAME, alternateName: 'Bramble & Petal Florist Studio', url: `${SITE_URL}/`, logo: `${SITE_URL}/assets/brand-logo.png`, email: 'info@bramblesandpetals.co.uk', description: 'Southampton florist creating wedding flowers, funeral tributes, seasonal bouquets and corporate arrangements.', areaServed: [{ '@type': 'City', name: 'Southampton' }, { '@type': 'AdministrativeArea', name: 'Hampshire' }], contactPoint: { '@type': 'ContactPoint', email: 'info@bramblesandpetals.co.uk', contactType: 'customer enquiries', availableLanguage: 'English' } },
-  { '@type': 'WebSite', '@id': `${SITE_URL}/#website`, url: `${SITE_URL}/`, name: BUSINESS_NAME, alternateName: 'Bramble & Petal Florist Studio', inLanguage: 'en-GB', publisher: { '@id': BUSINESS_ID } },
+  { '@type': 'Florist', '@id': BUSINESS_ID, name: BUSINESS_NAME, alternateName: ['Bramble & Petal Florist Studio', 'Brambles and Petals', 'Brambles & Petals'], url: `${SITE_URL}/`, logo: `${SITE_URL}/assets/brand-logo.png`, image: `${SITE_URL}/assets/weddings/wedding-hero-wide.webp`, email: 'info@bramblesandpetals.co.uk', description: 'Southampton florist creating wedding flowers, funeral tributes, seasonal bouquets and corporate arrangements.', areaServed: [{ '@type': 'City', name: 'Southampton' }, { '@type': 'AdministrativeArea', name: 'Hampshire' }], contactPoint: { '@type': 'ContactPoint', email: 'info@bramblesandpetals.co.uk', contactType: 'customer enquiries', availableLanguage: 'English' } },
+  { '@type': 'WebSite', '@id': `${SITE_URL}/#website`, url: `${SITE_URL}/`, name: BUSINESS_NAME, alternateName: ['Bramble & Petal Florist Studio', 'Brambles and Petals'], inLanguage: 'en-GB', publisher: { '@id': BUSINESS_ID } },
 ] };
 export function serviceSchema(path: PublicPath) {
   const page = publicPages[path];

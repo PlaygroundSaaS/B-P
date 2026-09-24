@@ -61,19 +61,19 @@ test('Studio API denies anonymous reads and saves without reaching the database'
 test('invalid complete-state writes never reach a database mutation',async()=>{
   let touched=false;
   const api=load('app/api/studio/route.ts',{'@/lib/studio-auth':{hasStudioSession:async()=>true},'@/lib/studio-database':{createStudioDatabaseClient:()=>({from:()=>{touched=true;throw Error('must not write');}})}});
-  const response=await api.PUT(new Request('https://example.test/api/studio',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({data:{},expectedUpdatedAt:null})}));
+  const response=await api.PUT(new Request('https://example.test/api/studio',{method:'PUT',headers:{'content-type':'application/json',origin:'https://example.test'},body:JSON.stringify({data:{},expectedUpdatedAt:null})}));
   assert.equal(response.status,400);assert.equal(touched,false);assert.equal(response.headers.get('cache-control'),'private, no-store');
 });
 test('revision conflicts return 409 instead of overwriting another edit',async()=>{
   let committed=false;
   const api=load('app/api/studio/route.ts',{'@/lib/studio-auth':{hasStudioSession:async()=>true},'@/lib/studio-database':{createStudioDatabaseClient:()=>({})},'@/lib/studio-command-server':{readWorkspace:async()=>({data:sample(),updatedAt:'2026-09-06T10:00:00Z'}),commitWorkspace:async()=>{committed=true;throw Error('must not overwrite')}}});
-  const response=await api.PUT(new Request('https://example.test/api/studio',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({data:sample(),expectedUpdatedAt:'2026-09-05T10:00:00Z'})}));
+  const response=await api.PUT(new Request('https://example.test/api/studio',{method:'PUT',headers:{'content-type':'application/json',origin:'https://example.test'},body:JSON.stringify({data:sample(),expectedUpdatedAt:'2026-09-05T10:00:00Z'})}));
   assert.equal(response.status,409);assert.equal(committed,false);
 });
 test('enquiry acknowledges persisted lead despite email-provider network failure',async()=>{
   const oldFetch=globalThis.fetch;const oldKey=process.env.RESEND_API_KEY;const oldFrom=process.env.RESEND_FROM_EMAIL;
   process.env.RESEND_API_KEY='local-test';process.env.RESEND_FROM_EMAIL='test@example.test';globalThis.fetch=async()=>{throw Error('offline')};
-  try {const api=load('app/api/enquiry/route.ts',{'@/lib/website-enquiry':{captureWebsiteEnquiry:async()=>true}});const response=await api.POST(new Request('https://example.test/api/enquiry',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({name:'Test',email:'test@example.test',occasion:'Wedding',message:'Local test only'})}));assert.equal(response.status,200);assert.match((await response.json()).message,/received by our studio/);}
+  try {const api=load('app/api/enquiry/route.ts',{'@/lib/website-enquiry':{captureWebsiteEnquiry:async()=>true},'@/lib/rate-limit':{enquiryAllowed:async()=>true}});const response=await api.POST(new Request('https://example.test/api/enquiry',{method:'POST',headers:{'content-type':'application/json',origin:'https://example.test'},body:JSON.stringify({name:'Test',email:'test@example.test',occasion:'Wedding',message:'Local test only'})}));assert.equal(response.status,200);assert.match((await response.json()).message,/received by our studio/);}
   finally {globalThis.fetch=oldFetch;if(oldKey===undefined)delete process.env.RESEND_API_KEY;else process.env.RESEND_API_KEY=oldKey;if(oldFrom===undefined)delete process.env.RESEND_FROM_EMAIL;else process.env.RESEND_FROM_EMAIL=oldFrom;}
 });
 const { studioInsights } = load('lib/studio-insights.ts');
@@ -103,7 +103,7 @@ test('origin validation uses incoming host behind the Next server adapter',()=>{
 });
 test('login rejects a null body without attempting authentication',async()=>{
  const api=load('app/api/studio/login/route.ts',{'@/lib/studio-auth':{studioLoginConfigured:()=>{throw Error('must not authenticate');}}});
- const response=await api.POST(new Request('https://example.test/api/studio/login',{method:'POST',headers:{'content-type':'application/json'},body:'null'}));assert.equal(response.status,400);
+ const response=await api.POST(new Request('https://example.test/api/studio/login',{method:'POST',headers:{'content-type':'application/json',origin:'https://example.test'},body:'null'}));assert.equal(response.status,400);
 });
 
  test('client profiles match older briefs with surrounding whitespace and case differences', () => {

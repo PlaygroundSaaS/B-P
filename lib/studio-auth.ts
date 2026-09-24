@@ -6,6 +6,12 @@ const SESSION_SECONDS = 60 * 60 * 24 * 14;
 
 const sessionSecret = () => process.env.AUTH_SECRET || process.env.STUDIO_PASSWORD || '';
 const signature = (value: string, secret: string) => createHmac('sha256', secret).update(value).digest('base64url');
+// Sessions are signed with a key derived from the password as well as AUTH_SECRET,
+// so changing STUDIO_PASSWORD signs every existing device out straight away.
+const sessionKey = () => {
+  const secret = sessionSecret();
+  return secret ? signature(`studio-session:${process.env.STUDIO_PASSWORD || ''}`, secret) : '';
+};
 
 const same = (left: string, right: string) => {
   const secret = sessionSecret();
@@ -24,7 +30,7 @@ export const validStudioCredentials = (username: string, password: string) => {
 };
 
 export const createStudioSession = () => {
-  const secret = sessionSecret();
+  const secret = sessionKey();
   const payload = Buffer.from(JSON.stringify({ role: 'owner', exp: Date.now() + SESSION_SECONDS * 1000 })).toString('base64url');
   return `${payload}.${signature(payload, secret)}`;
 };
@@ -42,7 +48,7 @@ export const studioSessionCookie = (value: string) => ({
 export const clearStudioSessionCookie = () => ({ ...studioSessionCookie(''), maxAge: 0 });
 
 export const hasStudioSession = async () => {
-  const secret = sessionSecret();
+  const secret = sessionKey();
   const token = (await cookies()).get(COOKIE_NAME)?.value;
   if (!secret || !token) return false;
   const [payload, receivedSignature, ...extra] = token.split('.');
@@ -50,7 +56,7 @@ export const hasStudioSession = async () => {
   if (!same(receivedSignature, signature(payload, secret))) return false;
   try {
     const { exp, role } = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8')) as { exp?: unknown; role?: unknown };
-    return (role === undefined || role === 'owner') && typeof exp === 'number' && exp > Date.now();
+    return role === 'owner' && typeof exp === 'number' && exp > Date.now();
   } catch {
     return false;
   }

@@ -1,0 +1,15 @@
+# Dependencies and build output
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+
+# Local environment files (never commit real keys)
+.env
+.env.*
+!.env.example
+
+# Vercel and OS files
+.vercel/
+.DS_Store
+npm-debug.log*

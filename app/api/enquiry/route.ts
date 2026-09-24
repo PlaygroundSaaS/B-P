@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { captureWebsiteEnquiry } from '@/lib/website-enquiry';
 import { NextResponse } from 'next/server';
 import { readJsonObject, requireSameOrigin, RequestError } from '@/lib/request-body';
+import { enquiryAllowed } from '@/lib/rate-limit';
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -29,6 +30,10 @@ export async function POST(request: Request) {
 
   if (!name || !email || !['Wedding', 'Funeral flowers', 'Corporate event', 'Everyday flowers', 'Other'].includes(occasion) || !message || !emailPattern.test(email)) {
     return NextResponse.json({ error: 'Please enter your name, a valid email address and your enquiry.' }, { status: 400 });
+  }
+
+  if (!(await enquiryAllowed(request))) {
+    return NextResponse.json({ error: 'We have received several enquiries from you in a short time. Please try again later or email info@bramblesandpetals.co.uk.' }, { status: 429, headers: { 'Retry-After': '3600' } });
   }
 
   const captured = await captureWebsiteEnquiry({ name, email, phone, occasion, eventDate, location, message });
