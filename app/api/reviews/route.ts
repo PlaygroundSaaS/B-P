@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 const json=(body:unknown,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'no-store'}});
 export async function GET(){
  const db=createStudioDatabaseClient(); if(!db)return json({error:'Reviews are temporarily unavailable.'},503);
- const {data,error}=await db.from('studio_reviews').select('id,public_name,review_text,rating,occasion,submitted_at').eq('workspace_key',STUDIO_WORKSPACE).eq('published',true).not('submitted_at','is',null).order('submitted_at',{ascending:false}).limit(100);
+ const {data,error}=await db.from('studio_reviews').select('id,public_name,review_text,rating,occasion,highlight,submitted_at').eq('workspace_key',STUDIO_WORKSPACE).eq('published',true).not('submitted_at','is',null).order('submitted_at',{ascending:false}).limit(100);
  return error?json({error:'Reviews are temporarily unavailable.'},503):json({reviews:data});
 }
 export async function POST(request:Request){

@@ -2,11 +2,12 @@ import { randomUUID, randomBytes, createHash } from 'node:crypto';
 import { hasStudioSession } from '@/lib/studio-auth';
 import { createStudioDatabaseClient, STUDIO_WORKSPACE } from '@/lib/studio-database';
 import { readJsonObject, requireSameOrigin, RequestError } from '@/lib/request-body';
+import { validateHighlight } from '@/lib/review-validation';
 const json=(body:unknown,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'private, no-store'}});
 export async function GET(){
  if(!await hasStudioSession())return json({error:'Please sign in.'},401);
  const db=createStudioDatabaseClient();if(!db)return json({error:'Reviews are unavailable.'},503);
- const {data,error}=await db.from('studio_reviews').select('id,client_label,created_at,expires_at,revoked_at,public_name,review_text,rating,occasion,submitted_at,published').eq('workspace_key',STUDIO_WORKSPACE).order('created_at',{ascending:false}).limit(500);
+ const {data,error}=await db.from('studio_reviews').select('id,client_label,created_at,expires_at,revoked_at,public_name,review_text,rating,occasion,highlight,submitted_at,published').eq('workspace_key',STUDIO_WORKSPACE).order('created_at',{ascending:false}).limit(500);
  return error?json({error:'Reviews could not be loaded.'},503):json({reviews:data});
 }
 export async function POST(request:Request){
@@ -18,6 +19,14 @@ export async function POST(request:Request){
   const id=randomUUID(),secret=randomBytes(32).toString('base64url');
   const {error}=await db.from('studio_reviews').insert({id,workspace_key:STUDIO_WORKSPACE,client_label:label,token_hash:createHash('sha256').update(secret).digest('hex')});
   if(error)throw error;return json({invite:`${id}.${secret}`});
+ }
+ if(body.action==='highlight'){
+  if(typeof body.id!=='string')return json({error:'Choose a review to highlight.'},400);
+  const {data:review,error:readError}=await db.from('studio_reviews').select('review_text').eq('id',body.id).eq('workspace_key',STUDIO_WORKSPACE).not('submitted_at','is',null).maybeSingle();
+  if(readError)throw readError;if(!review?.review_text)return json({error:'This review could not be updated.'},404);
+  let highlight;try{highlight=validateHighlight(body.highlight,review.review_text);}catch(error){return json({error:(error as Error).message},400);}
+  const {data,error}=await db.from('studio_reviews').update({highlight}).eq('id',body.id).eq('workspace_key',STUDIO_WORKSPACE).not('submitted_at','is',null).select('id');
+  if(error)throw error;if(!data?.length)return json({error:'This review could not be updated.'},404);return json({saved:true,highlight});
  }
  if(typeof body.id!=='string'||!['visibility','revoke'].includes(String(body.action)))return json({error:'Choose a valid review action.'},400);
  if(body.action==='visibility'&&typeof body.published!=='boolean')return json({error:'Choose whether to publish the review.'},400);

@@ -15,3 +15,15 @@ export function parseReviewToken(value: unknown) {
  const match = /^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\.([A-Za-z0-9_-]{43})$/.exec(value);
  return match ? {id:match[1],secret:match[2]} : null;
 }
+export const HIGHLIGHT_MAX = 280;
+const collapse = (value: string) => value.replace(/\s+/g, ' ').trim();
+// A highlight must be the client's own words: a passage copied from their review.
+export function validateHighlight(value: unknown, reviewText: string) {
+ if (value === null || value === undefined) return null;
+ if (typeof value !== 'string') throw new Error('Choose a highlight from the review text.');
+ const highlight = collapse(value).replace(/^["'“‘]+|["'”’]+$/g, '').trim();
+ if (!highlight) return null;
+ if (highlight.length < 3 || highlight.length > HIGHLIGHT_MAX) throw new Error(`Keep the highlight between 3 and ${HIGHLIGHT_MAX} characters.`);
+ if (!collapse(reviewText).includes(highlight)) throw new Error('The highlight must be copied word for word from the client’s review.');
+ return highlight;
+}
