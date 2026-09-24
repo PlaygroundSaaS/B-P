@@ -1,12 +1,14 @@
 import { createHash } from 'node:crypto';
 import { createStudioDatabaseClient, STUDIO_WORKSPACE } from '@/lib/studio-database';
 import { readJsonObject, requireSameOrigin, RequestError } from '@/lib/request-body';
-import { parseReviewToken, validateReview } from '@/lib/review-validation';
+import { isMissingHighlightColumn, parseReviewToken, validateReview } from '@/lib/review-validation';
 export const dynamic = 'force-dynamic';
 const json=(body:unknown,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'no-store'}});
 export async function GET(){
  const db=createStudioDatabaseClient(); if(!db)return json({error:'Reviews are temporarily unavailable.'},503);
- const {data,error}=await db.from('studio_reviews').select('id,public_name,review_text,rating,occasion,highlight,submitted_at').eq('workspace_key',STUDIO_WORKSPACE).eq('published',true).not('submitted_at','is',null).order('submitted_at',{ascending:false}).limit(100);
+ const published=(columns:string)=>db.from('studio_reviews').select(columns).eq('workspace_key',STUDIO_WORKSPACE).eq('published',true).not('submitted_at','is',null).order('submitted_at',{ascending:false}).limit(100);
+ let {data,error}=await published('id,public_name,review_text,rating,occasion,highlight,submitted_at');
+ if(isMissingHighlightColumn(error))({data,error}=await published('id,public_name,review_text,rating,occasion,submitted_at'));
  return error?json({error:'Reviews are temporarily unavailable.'},503):json({reviews:data});
 }
 export async function POST(request:Request){
