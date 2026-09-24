@@ -5,9 +5,9 @@ import WeddingGallery from '../wedding-gallery';
 import { weddingImages } from '../public/wedding-images';
 export const metadata = pageMetadata('/weddings');
 const content = {
-  "title": "Wedding flowers in Southampton & Hampshire.",
+  "title": "Wedding flowers in Southampton, the New Forest & Hampshire.",
   "label": "THE WEDDING COLLECTION",
-  "intro": "From our Southampton studio to wedding venues across Hampshire, we create flowers around your day. From the bouquet in your hands to the flowers that welcome your guests. Designed around your venue, your season and your way of celebrating.",
+  "intro": "From our Southampton studio to wedding venues across the New Forest and Hampshire, we create flowers around your day. From the bouquet in your hands to the flowers that welcome your guests. Designed around your venue, your season and your way of celebrating.",
   "image": "/assets/weddings/bridal-party-bouquets.webp",
   "alt": "Bride and bridesmaid holding coordinating Bramble & Petal bouquets",
   "occasion": "Wedding",

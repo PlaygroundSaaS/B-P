@@ -5,7 +5,7 @@ export const metadata = pageMetadata('/funerals');
 const content = {
   "title": "Funeral flowers, created with care.",
   "label": "FUNERAL & SYMPATHY FLOWERS",
-  "intro": "Personal funeral flowers for Southampton and Hampshire, thoughtfully made. We’ll help you choose flowers that reflect the person being remembered and arrange the practical details with care.",
+  "intro": "Personal funeral flowers for Southampton, the New Forest and Hampshire, thoughtfully made. We’ll help you choose flowers that reflect the person being remembered and arrange the practical details with care.",
   "image": "/assets/sympathy-spray.jpg",
   "alt": "White and green floral spray made by Bramble & Petal",
   "occasion": "Funeral flowers",
