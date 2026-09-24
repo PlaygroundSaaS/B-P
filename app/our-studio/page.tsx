@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import ServicePage from '../public/service-page';
 export const metadata = pageMetadata('/our-studio');
 const content = {
-  "title": "Meet Jade, your Southampton florist.",
+  "title": "Meet Jade, your Southampton & New Forest florist.",
   "label": "INSIDE BRAMBLE & PETAL",
   "intro": "Our Southampton studio is a place for conversations, seasonal flowers and careful making. Jade brings your ideas together, from the first inspiration to the final arrangement.",
   "image": "/assets/weddings/creating-wedding-flowers.webp",

@@ -5,7 +5,7 @@ export const metadata = pageMetadata('/corporate');
 const content = {
   "title": "Corporate & event flowers.",
   "label": "CORPORATE & HOSPITALITY",
-  "intro": "Floral design for businesses and events across Southampton and Hampshire. For the first impression, the gathering and the everyday. Floral design considered around your space, your brand and the people who use it.",
+  "intro": "Floral design for businesses and events across Southampton, the New Forest and Hampshire. For the first impression, the gathering and the everyday. Floral design considered around your space, your brand and the people who use it.",
   "occasion": "Corporate event",
   "closing": "Let’s talk about your space.",
   "sections": [

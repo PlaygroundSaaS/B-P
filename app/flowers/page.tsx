@@ -3,9 +3,9 @@ import type { Metadata } from 'next';
 import ServicePage from '../public/service-page';
 export const metadata = pageMetadata('/flowers');
 const content = {
-  "title": "Seasonal bouquets in Southampton.",
+  "title": "Seasonal bouquets in Southampton & the New Forest.",
   "label": "EVERYDAY & REGULAR FLOWERS",
-  "intro": "Flowers from our Southampton studio for a thank you, a celebration or simply something lovely for the room. Seasonal flowers, arranged with the same care as every occasion we create for.",
+  "intro": "Flowers from our Southampton studio for homes and workplaces across the New Forest and Hampshire. For a thank you, a celebration or simply something lovely for the room. Seasonal flowers, arranged with the same care as every occasion we create for.",
   "image": "/assets/studio-work-2.jpg",
   "alt": "Hand-tied white flowers and eucalyptus prepared in the studio",
   "occasion": "Everyday flowers",
