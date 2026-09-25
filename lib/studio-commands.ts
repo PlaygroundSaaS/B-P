@@ -57,6 +57,91 @@ export function paidFor(data: StudioData, orderId: string) {
   return round2((data.operations?.payments || []).filter(p => p.orderId === orderId).reduce((s, p) => s + p.amount * (p.kind === 'Refund' ? -1 : 1), 0));
 }
 
+export type DeletionTarget = { planId: string } | { customerId: string };
+export interface DeletionScope {
+  label: string; customerIds: Set<string>; planIds: Set<string>; recipeIds: Set<string>; weddingBuildIds: Set<string>;
+  eventQuoteIds: Set<string>; paymentIds: Set<string>; deliveryIds: Set<string>; hireReservationIds: Set<string>;
+  taskIds: Set<string>; leadIds: Set<string>; crmIds: Set<string>; recurringIds: Set<string>;
+  stockReturns: InventoryTransaction[]; paymentsTotal: number;
+}
+
+/** Everything that belongs only to one client or one event, so a delete leaves no orphaned records behind. */
+export function deletionScope(data: StudioData, target: DeletionTarget): DeletionScope | null {
+  const ops = { ...emptyOperations(), ...data.operations };
+  const customer = 'customerId' in target ? data.customers.find(c => c.id === target.customerId) : undefined;
+  const plan = 'planId' in target ? data.plans.find(p => p.id === target.planId) : undefined;
+  if (!customer && !plan) return null;
+  const key = customer ? clientNameKey(customer.name) : '';
+  const customerIds = new Set(data.customers.map(c => c.id));
+  // Older records may only carry the client's name. A record linked to a different saved client is never matched by name.
+  const owned = (row: { customerId?: string; clientName?: string; isTemplate?: boolean }) => !!customer && (row.customerId === customer.id || (!!key && !row.isTemplate && !(row.customerId && customerIds.has(row.customerId)) && clientNameKey(row.clientName || '') === key));
+  const planIds = new Set(plan ? [plan.id] : data.plans.filter(owned).map(p => p.id));
+  const recipes = [...data.quotes, ...data.jobs].filter(r => (!!r.planId && planIds.has(r.planId)) || owned(r));
+  const recipeIds = new Set(recipes.map(r => r.id));
+  const eventQuoteIds = new Set(ops.eventQuotes.filter(q => planIds.has(q.planId)).map(q => q.id));
+  const payments = ops.payments.filter(p => eventQuoteIds.has(p.orderId) || recipeIds.has(p.orderId));
+  const knownPlan = (id: string) => data.plans.some(p => p.id === id);
+  const stockReturns: InventoryTransaction[] = [];
+  for (const job of data.jobs.filter(j => recipeIds.has(j.id) && !j.stockReturned && !j.consumedAt)) {
+    // Same stock as cancelling the order returns; stems already used in production stay used.
+    for (const need of job.commitments || recipeRequirements(job)) {
+      const stock = data.inventory.find(i => i.id === need.inventoryId);
+      if (stock && need.quantity > 0) stockReturns.push({ inventoryId: stock.id, name: stock.name, quantity: need.quantity, unitCost: stock.costPerStem, kind: 'Release', recordId: job.id });
+    }
+  }
+  return {
+    label: customer ? customer.name : `${plan!.clientName || 'Untitled'} ${plan!.type.toLowerCase()}${plan!.eventDate ? ` on ${plan!.eventDate}` : ''}`,
+    customerIds: new Set(customer ? [customer.id] : []), planIds, recipeIds,
+    weddingBuildIds: new Set(data.weddingBuilds.filter(b => planIds.has(b.planId) || (!knownPlan(b.planId) && owned(b))).map(b => b.id)),
+    eventQuoteIds, paymentIds: new Set(payments.map(p => p.id)),
+    deliveryIds: new Set(ops.deliveries.filter(d => planIds.has(d.planId) || (!knownPlan(d.planId) && owned(d))).map(d => d.id)),
+    hireReservationIds: new Set(ops.hireReservations.filter(r => planIds.has(r.planId)).map(r => r.id)),
+    taskIds: new Set(ops.tasks.filter(t => planIds.has(t.planId)).map(t => t.id)),
+    leadIds: new Set(customer ? ops.leads.filter(l => owned(l) || (!!l.planId && planIds.has(l.planId))).map(l => l.id) : []),
+    crmIds: new Set(customer ? ops.crm.filter(c => c.customerId === customer.id).map(c => c.id) : []),
+    recurringIds: new Set(customer ? ops.recurring.filter(owned).map(r => r.id) : []),
+    stockReturns, paymentsTotal: round2(payments.reduce((s, p) => s + p.amount * (p.kind === 'Refund' ? -1 : 1), 0)),
+  };
+}
+
+const count = (n: number, one: string, many = `${one}s`) => n ? [`${n} ${n === 1 ? one : many}`] : [];
+/** Plain-English list for the confirmation step. */
+export function describeDeletion(scope: DeletionScope) {
+  const removed = [
+    ...count(scope.planIds.size, 'event'), ...count(scope.recipeIds.size, 'recipe'), ...count(scope.eventQuoteIds.size, 'quotation'),
+    ...(scope.paymentIds.size ? [`${scope.paymentIds.size} payment${scope.paymentIds.size === 1 ? '' : 's'} (£${scope.paymentsTotal.toFixed(2)})`] : []),
+    ...count(scope.deliveryIds.size, 'delivery', 'deliveries'), ...count(scope.hireReservationIds.size, 'hire booking'), ...count(scope.taskIds.size, 'task'),
+    ...count(scope.leadIds.size, 'enquiry', 'enquiries'), ...count(scope.crmIds.size, 'client note'), ...count(scope.recurringIds.size, 'routine flower order'),
+    ...count(scope.weddingBuildIds.size, 'wedding build'),
+  ];
+  const returned = new Map<string, number>();
+  for (const t of scope.stockReturns) returned.set(t.name, round2((returned.get(t.name) || 0) + t.quantity));
+  return { removed, stockReturned: returned.size ? `Reserved stock goes back into Inventory: ${[...returned].map(([name, n]) => `${n} ${name}`).join(', ')}.` : '' };
+}
+
+/** Removes the scoped records, returns reserved stock and unlinks anything that belongs to someone else. */
+export function removeScope(data: StudioData, scope: DeletionScope) {
+  const ops = data.operations = { ...emptyOperations(), ...data.operations };
+  for (const t of scope.stockReturns) {
+    const stock = data.inventory.find(i => i.id === t.inventoryId);
+    if (stock) stock.stemsRemaining = round2(stock.stemsRemaining + t.quantity);
+  }
+  data.customers = data.customers.filter(c => !scope.customerIds.has(c.id));
+  data.plans = data.plans.filter(p => !scope.planIds.has(p.id));
+  data.quotes = data.quotes.filter(r => !scope.recipeIds.has(r.id));
+  data.jobs = data.jobs.filter(r => !scope.recipeIds.has(r.id));
+  data.weddingBuilds = data.weddingBuilds.filter(b => !scope.weddingBuildIds.has(b.id));
+  ops.eventQuotes = ops.eventQuotes.filter(q => !scope.eventQuoteIds.has(q.id));
+  ops.payments = ops.payments.filter(p => !scope.paymentIds.has(p.id));
+  ops.deliveries = ops.deliveries.filter(d => !scope.deliveryIds.has(d.id));
+  ops.hireReservations = ops.hireReservations.filter(r => !scope.hireReservationIds.has(r.id));
+  ops.tasks = ops.tasks.filter(t => !scope.taskIds.has(t.id));
+  ops.leads = ops.leads.filter(l => !scope.leadIds.has(l.id)).map(l => l.planId && scope.planIds.has(l.planId) ? { ...l, planId: undefined } : l);
+  ops.crm = ops.crm.filter(c => !scope.crmIds.has(c.id));
+  ops.recurring = ops.recurring.filter(r => !scope.recurringIds.has(r.id)).map(r => scope.recipeIds.has(r.recipeId) ? { ...r, recipeId: '' } : r);
+  return [...scope.customerIds, ...scope.planIds, ...scope.recipeIds, ...scope.eventQuoteIds, ...scope.paymentIds];
+}
+
 /** All recipe purchase, reservation and financial transitions run here on the server. */
 export function applyStudioCommand(source: StudioData, command: StudioCommand, now = new Date().toISOString()): CommandResult {
   const data = structuredClone(source);
@@ -293,6 +378,15 @@ export function applyStudioCommand(source: StudioData, command: StudioCommand, n
       // Removes the item only: no wastage record and no stock movement, so wastage and stock history stay as they were.
       data.inventory = data.inventory.filter(i => i.id !== stock.id);
       recordIds = [stock.id]; action = `Stock item deleted: ${stock.name} (not recorded as wastage)`; break;
+    }
+    case 'deleteEvent':
+    case 'deleteClient': {
+      const scope = deletionScope(data, command.type === 'deleteEvent' ? { planId: command.planId } : { customerId: command.customerId });
+      requireThat(scope, `This ${command.type === 'deleteEvent' ? 'event' : 'client'} has already been deleted.`);
+      // Reserved stock comes back as a Release, as when an order is cancelled; nothing is recorded as wastage.
+      recordIds = removeScope(data, scope); transactions.push(...scope.stockReturns);
+      const { removed } = describeDeletion(scope);
+      action = `${command.type === 'deleteEvent' ? 'Event' : 'Client'} deleted: ${scope.label}${removed.length ? ` (${removed.join(', ')})` : ''}`; break;
     }
     default: throw new Error('This action is not supported. Refresh the Studio and try again.');
   }

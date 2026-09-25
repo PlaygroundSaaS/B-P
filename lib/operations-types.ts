@@ -100,6 +100,8 @@ export type StudioCommand =
   | { type: 'returnHire'; id: string; returned: number; damaged: number; lost: number; notes: string }
   | { type: 'receivePurchaseOrder'; id: string }
   | { type: 'waste'; inventoryId: string; quantity: number; reason: string; date: string; notes: string; image?: StudioAsset }
-  | { type: 'deleteStock'; inventoryId: string };
+  | { type: 'deleteStock'; inventoryId: string }
+  | { type: 'deleteEvent'; planId: string }
+  | { type: 'deleteClient'; customerId: string };
 
 export const emptyOperations = (): OperationsData => ({ catalogue: [], eventQuotes: [], suppliers: [], purchaseOrders: [], leads: [], crm: [], deliveries: [], hireItems: [], hireReservations: [], payments: [], tasks: [], recurring: [], dismissedActions: [] });
