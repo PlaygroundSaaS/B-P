@@ -7,7 +7,8 @@ import StudioInsights from './studio-insights';
 import SetupOptions from './setup-options';
 import { emptyOperations, type StudioCommand, type InspirationSelection, type EventDetails } from '@/lib/operations-types';
 import { newRecipe } from '@/lib/operations-model';
-import { Fields } from './ops-ui';
+import { Fields, confirmDeletion } from './ops-ui';
+import { deletionScope, type DeletionScope } from '@/lib/studio-commands';
 import StudioHome, { EventDirectory } from './studio-home';
 import StudioNavigation, { StudioGateway } from './studio-navigation';
 import { CatalogueBrowse } from './inspiration-catalogue';
@@ -375,18 +376,16 @@ export default function StudioClient() {
     const customers: Customer[] = existing ? source.customers.map(customer => customer.id === existing.id ? { ...customer, contact: contact || customer.contact, notes: notes || customer.notes } : customer) : [{ id: id(), name: cleanName, contact, notes, createdAt: new Date().toISOString() }, ...source.customers];
     return { ...source, customers };
   };
+  const afterDeletion = (scope: DeletionScope) => {
+    workspaceDirty.current = false; setEventDraft(null);
+    if (selectedCustomerId && scope.customerIds.has(selectedCustomerId)) setSelectedCustomerId(null);
+    if (scope.recipeIds.has(quote.id)) setQuote(blankQuote(data.settings));
+    setMessage(`${scope.label} deleted.`);
+  };
   const deleteCustomer = async (customer: Customer) => {
-    const name = clientNameKey(customer.name);
-    if (!globalThis.confirm(`Delete ${customer.name} and all of their saved quotes, completed jobs and planning briefs? This cannot be undone.`)) return;
-    const next: StudioData = {
-      ...data,
-      customers: data.customers.filter(item => item.id !== customer.id),
-      quotes: data.quotes.filter(item => clientNameKey(item.clientName) !== name),
-      jobs: data.jobs.filter(item => clientNameKey(item.clientName) !== name),
-      plans: data.plans.filter(item => clientNameKey(item.clientName) !== name),
-      weddingBuilds: data.weddingBuilds.filter(item => clientNameKey(item.clientName) !== name),
-    };
-    if (await persist(next, `${customer.name} and their saved records have been deleted.`)) setSelectedCustomerId(null);
+    const scope = deletionScope(data, { customerId: customer.id });
+    if (!scope || !confirmDeletion(`Delete ${customer.name} and everything saved for them?`, scope)) return;
+    if (await runCommand({ type: 'deleteClient', customerId: customer.id })) afterDeletion(scope);
   };
   const addFlowerLine = () => {
     const flower = data.inventory.find(item => item.stemsRemaining > 0);
@@ -536,7 +535,7 @@ export default function StudioClient() {
         <section className="records"><h2>Saved {clientType.toLowerCase()} plans</h2>{data.plans.filter(plan => plan.type === clientType).length ? data.plans.filter(plan => plan.type === clientType).map(plan => <article key={plan.id}><b>{plan.clientName} <em>· {plan.status || 'Enquiry'}</em></b><span>{plan.eventDate || 'Date to confirm'} {plan.venue ? `· ${plan.venue}` : ''}</span><p>{plan.arrangements || plan.notes}</p>{plan.references?.length ? <div className="saved-reference-strip">{plan.references.map(reference => <Image key={reference.id} src={reference.dataUrl} alt={reference.caption || reference.name} width={92} height={70} unoptimized />)}</div> : null}{plan.finishedEstimate !== null && <strong>{money(plan.finishedEstimate)}</strong>}{plan.type === 'Wedding' && <button type="button" onClick={() => { setSetupDirty(false); setSetupEditor({ planId: plan.id, client: plan.clientName, options: structuredClone(plan.setupOptions || []), presentation: false }); }}>Flower setups &amp; client proposal</button>}<button type="button" onClick={() => { if (!canNavigate()) return; setScreenValue('business'); setTabValue('clients'); setEventDraft(plan); updateLocation('business', 'clients'); }}>Open full event workspace</button><button type="button" onClick={() => showPlanInvoice(plan)}>Generate invoice</button></article>) : <p>No {clientType.toLowerCase()} plans saved yet.</p>}</section>
       </section>
     ) : <section className="studio-content">
-      {eventDraft ? <><button type="button" className="back-button" onClick={() => { if (canNavigate()) setEventDraft(null); }}>← Back to Studio</button><EventWorkspace key={eventDraft.id} data={data} plan={data.plans.find(p => p.id === eventDraft.id) || eventDraft} save={persist} command={runCommand} onRecipe={openRecipe} onDirty={() => { workspaceDirty.current = true; }} /></> : <>
+      {eventDraft ? <><button type="button" className="back-button" onClick={() => { if (canNavigate()) setEventDraft(null); }}>← Back to Studio</button><EventWorkspace key={eventDraft.id} data={data} plan={data.plans.find(p => p.id === eventDraft.id) || eventDraft} save={persist} command={runCommand} onRecipe={openRecipe} onDirty={() => { workspaceDirty.current = true; }} onDeleted={afterDeletion} /></> : <>
       {tab === 'catalogue' && <InspirationCatalogue data={data} save={persist} onDirty={() => { workspaceDirty.current = true; }} />}
       {['production','suppliers','deliveries','hire','payments','reports','calendar','leads','tasks','recurring','assistant','activity'].includes(tab) && <OperationsHub section={tab} data={data} save={persist} command={runCommand} open={openRecord} openEvent={plan => { setEventDraft(plan); setTabValue('clients'); }} onRecipe={openRecipe} onDirty={() => { workspaceDirty.current = true; }} />}
 
