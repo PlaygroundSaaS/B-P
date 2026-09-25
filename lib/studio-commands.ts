@@ -31,6 +31,15 @@ export function stockSummary(data: StudioData, inventoryId: string) {
   const reserved = data.jobs.filter(job => !job.stockReturned && !job.consumedAt).reduce((sum, job) => sum + (job.commitments || []).filter(row => row.inventoryId === inventoryId).reduce((n, row) => n + row.quantity, 0), 0);
   return { available, reserved, onHand: round2(available + reserved) };
 }
+// Stock still in the studio, including stems reserved for purchased work not yet made, valued at its recorded cost.
+export function stockValue(data: StudioData, inventoryId: string) {
+  const cost = data.inventory.find(row => row.id === inventoryId)?.costPerStem || 0;
+  const { onHand, reserved } = stockSummary(data, inventoryId);
+  return { value: round2(Math.max(0, onHand) * cost), reserved: round2(reserved * cost) };
+}
+export function totalStockValue(data: StudioData) {
+  return data.inventory.reduce((sum, row) => { const stock = stockValue(data, row.id); return { value: round2(sum.value + stock.value), reserved: round2(sum.reserved + stock.reserved) }; }, { value: 0, reserved: 0 });
+}
 export function recipeRevision(recipe: Quote) {
   return JSON.stringify([recipe.id, recipe.name, recipe.quantity || 1, recipe.lines, recipe.labourHours, recipe.labourRate, recipe.wastagePercent, recipe.markupPercent, recipe.deliveryFee, recipe.discount, recipe.vatApplies, recipe.vatRate, recipe.sellingPriceExVat, recipe.deliveryCost, recipe.setupCost, recipe.collectionCost, recipe.supplierCharges, recipe.additionalExpenses]);
 }

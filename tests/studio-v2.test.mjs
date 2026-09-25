@@ -14,7 +14,7 @@ function load(path, mocks = {}) {
   return module.exports;
 }
 const { emptyStudio, calculateTotals } = load('lib/pricing.ts');
-const { applyStudioCommand, stockSummary, eventQuoteTotals, recipeRevision } = load('lib/studio-commands.ts');
+const { applyStudioCommand, stockSummary, stockValue, totalStockValue, eventQuoteTotals, recipeRevision } = load('lib/studio-commands.ts');
 const { profitModel, recipeProfitInput, eventProfitInput } = load('lib/profitability.ts');
 const { businessIntelligence } = load('lib/business-intelligence.ts');
 const { clientEvent, clientQuotation, clientAssetAllowed } = load('lib/client-portal.ts');
@@ -77,4 +77,14 @@ test('stock reserved for purchased work cannot be deleted until that order is ca
   assert.throws(()=>apply(d,{type:'deleteStock',inventoryId:'rose'}),/reserved for purchased work/);
   const cancelled = apply(d,{type:'returnRecipe',recipeId:'recipe',reason:'Test order'}).data;
   assert.equal(apply(cancelled,{type:'deleteStock',inventoryId:'rose'}).data.inventory.length,0);
+});
+test('stock value uses the recorded cost of stock still in the studio, including stems reserved for purchased work', () => {
+  const d = state(); d.inventory.push({id:'tulip',name:'Tulip',costPerStem:0.85,stemsPurchased:10,stemsRemaining:3});
+  assert.deepEqual(stockValue(d,'rose'),{value:40,reserved:0}); assert.deepEqual(stockValue(d,'tulip'),{value:2.55,reserved:0});
+  assert.deepEqual(totalStockValue(d),{value:42.55,reserved:0});
+  const bought = purchased(saved(d));
+  assert.deepEqual(stockValue(bought,'rose'),{value:40,reserved:8}); assert.deepEqual(totalStockValue(bought),{value:42.55,reserved:8});
+  const made = apply(bought,{type:'production',recipeId:'recipe',status:'Completed',assignedTo:'Jade',due:''}).data;
+  assert.deepEqual(totalStockValue(made),{value:34.55,reserved:0});
+  assert.deepEqual(totalStockValue({...emptyStudio(),inventory:[]}),{value:0,reserved:0});
 });

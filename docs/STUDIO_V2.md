@@ -38,6 +38,7 @@ Photo assistance suggests the main visible flower/material, colour and approxima
 
 - Existing recipes remain `quotes` (Draft/Quote) and `jobs` (Purchased); events remain `plans`. Optional `operations` collections hold the connected operational records.
 - Available stock is `stemsRemaining`. On hand equals available plus unconsumed commitments. Historical purchases without commitment records are treated as already deducted.
+- Stock value (the Inventory heading total and the **Stock value** column) is on-hand quantity × the recorded cost per stem/unit, so stems reserved for purchased work count until production consumes them. The reserved share is shown beneath each figure.
 - Server commands validate prices, quantities and state transitions. The database RPC locks the workspace row, checks the exact revision and commits records, stock ledger, audit and idempotency receipt in one transaction.
 - Repeated operation IDs cannot apply stock twice. A different payload cannot reuse an operation ID. Conflicts require a refresh instead of overwriting another edit.
 - Full-state legacy saves cannot modify purchased jobs, financial collections, reservations or received purchase orders through an alternate path.
