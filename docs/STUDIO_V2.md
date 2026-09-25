@@ -41,6 +41,7 @@ Photo assistance suggests the main visible flower/material, colour and approxima
 - Server commands validate prices, quantities and state transitions. The database RPC locks the workspace row, checks the exact revision and commits records, stock ledger, audit and idempotency receipt in one transaction.
 - Repeated operation IDs cannot apply stock twice. A different payload cannot reuse an operation ID. Conflicts require a refresh instead of overwriting another edit.
 - Full-state legacy saves cannot modify purchased jobs, financial collections, reservations or received purchase orders through an alternate path.
+- **Delete** on an Inventory row removes that stock item without a wastage record or stock movement, so wastage, losses and the stock ledger are unchanged (the audit history still notes the deletion). Stock reserved for purchased work cannot be deleted until that order is amended or cancelled.
 - Post-purchase amendments require a reason. Consumed stock cannot simply be returned wholesale. Combined event prices remain on record while recipe cost amendments are audited.
 - Private client sessions are separate from owner sessions, bound to a revocable event grant and checked on each request. Server allowlists omit internal costs, consultation notes, documents and other clients. A client session cannot be substituted for an owner session.
 - Assets use a private storage bucket; client reads are restricted to their plan’s references and active catalogue images. Owner APIs and audit/AI history require owner authentication.
