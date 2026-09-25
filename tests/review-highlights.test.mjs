@@ -56,3 +56,45 @@ test('unsubmitted invitations cannot be highlighted', async () => {
   const response = await studioApi(null, () => assert.fail('no update expected')).POST(post({ action: 'highlight', id: 'r', highlight: 'anything' }));
   assert.equal(response.status, 404);
 });
+
+// Before the highlight migration runs, the database rejects the highlight column.
+const missingColumn = { code: '42703', message: 'column studio_reviews.highlight does not exist' };
+function listApi(path, extraMocks = {}) {
+  const selects = [];
+  const chain = columns => { const result = columns.includes('highlight') ? { data: null, error: missingColumn } : { data: [{ id: 'r', review_text: review }], error: null }; const link = { eq: () => link, not: () => link, order: () => link, limit: () => link, then: resolve => resolve(result) }; return link; };
+  const api = load(path, { ...extraMocks, '@/lib/studio-database': { STUDIO_WORKSPACE: 'test', createStudioDatabaseClient: () => ({ from: () => ({ select: columns => { selects.push(columns); return chain(columns); } }) }) } });
+  return { api, selects };
+}
+
+test('the website still shows reviews before the highlight column exists', async () => {
+  const { api, selects } = listApi('app/api/reviews/route.ts');
+  const response = await api.GET();
+  assert.equal(response.status, 200);
+  assert.deepEqual((await response.json()).reviews, [{ id: 'r', review_text: review }]);
+  assert.equal(selects.length, 2);
+  assert.ok(!selects[1].includes('highlight'));
+});
+
+test('the Studio still lists reviews before the highlight column exists', async () => {
+  const { api } = listApi('app/api/studio/reviews/route.ts', { '@/lib/studio-auth': { hasStudioSession: async () => true } });
+  assert.equal((await api.GET()).status, 200);
+});
+
+test('saving a highlight before the migration explains what is missing', async () => {
+  const chain = { eq: () => chain, not: () => chain, maybeSingle: async () => ({ data: { review_text: review }, error: null }), select: () => ({ then: resolve => resolve({ data: null, error: { code: 'PGRST204', message: "Could not find the 'highlight' column of 'studio_reviews' in the schema cache" } }) }) };
+  const api = load('app/api/studio/reviews/route.ts', {
+    '@/lib/studio-auth': { hasStudioSession: async () => true },
+    '@/lib/studio-database': { STUDIO_WORKSPACE: 'test', createStudioDatabaseClient: () => ({ from: () => ({ select: () => chain, update: () => chain }) }) },
+  });
+  const response = await api.POST(post({ action: 'highlight', id: 'r', highlight: 'the whole day felt calm' }));
+  assert.equal(response.status, 503);
+  assert.match((await response.json()).error, /not switched on/);
+});
+
+test('other database errors are not mistaken for a missing highlight column', () => {
+  const { isMissingHighlightColumn } = load('lib/review-validation.ts');
+  assert.equal(isMissingHighlightColumn(missingColumn), true);
+  assert.equal(isMissingHighlightColumn({ code: '42703', message: 'column studio_reviews.rating does not exist' }), false);
+  assert.equal(isMissingHighlightColumn({ code: '57014', message: 'timeout' }), false);
+  assert.equal(isMissingHighlightColumn(null), false);
+});
