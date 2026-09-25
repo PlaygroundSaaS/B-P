@@ -278,6 +278,13 @@ export function applyStudioCommand(source: StudioData, command: StudioCommand, n
       transactions.push({ inventoryId: stock.id, name: stock.name, quantity: -command.quantity, unitCost: stock.costPerStem, kind: 'Waste', recordId: id });
       recordIds = [stock.id, id]; action = 'Waste recorded'; break;
     }
+    case 'deleteStock': {
+      const stock = data.inventory.find(i => i.id === command.inventoryId); requireThat(stock, 'This stock item has already been deleted.');
+      requireThat(stockSummary(data, stock.id).reserved === 0, 'This stock is reserved for purchased work. Amend or cancel that recipe before deleting it.');
+      // Removes the item only: no wastage record and no stock movement, so wastage and stock history stay as they were.
+      data.inventory = data.inventory.filter(i => i.id !== stock.id);
+      recordIds = [stock.id]; action = `Stock item deleted: ${stock.name} (not recorded as wastage)`; break;
+    }
     default: throw new Error('This action is not supported. Refresh the Studio and try again.');
   }
   requireThat(data.inventory.every(i => finite(i.stemsRemaining)), 'This change would leave invalid stock. Nothing was saved.');

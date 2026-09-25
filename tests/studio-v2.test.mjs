@@ -65,3 +65,16 @@ test('cancelled orders cannot receive a new payment', () => {
   const d=apply(purchased(),{type:'returnRecipe',recipeId:'recipe',reason:'Not needed'}).data;
   assert.throws(()=>apply(d,{type:'payment',payment:{id:'cancelled-payment',orderId:'recipe',clientName:'Sample',kind:'Balance',method:'Cash',amount:1,date:'2026-09-08',reference:''}}),/Cancelled orders/);
 });
+test('deleting a stock item removes it without recording wastage or a stock movement', () => {
+  const d = state(); d.inventory.push({id:'tulip',name:'Tulip',costPerStem:1,stemsPurchased:10,stemsRemaining:10}); d.wastage = [{id:'old-waste',inventoryId:'rose',name:'Rose',quantity:2,unitCost:2,recordedAt:'2026-09-01T12:00:00Z'}];
+  const result = apply(d,{type:'deleteStock',inventoryId:'rose'});
+  assert.deepEqual(result.data.inventory.map(i=>i.id),['tulip']); assert.equal(result.data.inventory[0].stemsRemaining,10);
+  assert.deepEqual(result.transactions,[]); assert.deepEqual(result.data.wastage,d.wastage); assert.deepEqual(result.recordIds,['rose']);
+  assert.throws(()=>apply(result.data,{type:'deleteStock',inventoryId:'rose'}),/already been deleted/);
+});
+test('stock reserved for purchased work cannot be deleted until that order is cancelled', () => {
+  const d = purchased();
+  assert.throws(()=>apply(d,{type:'deleteStock',inventoryId:'rose'}),/reserved for purchased work/);
+  const cancelled = apply(d,{type:'returnRecipe',recipeId:'recipe',reason:'Test order'}).data;
+  assert.equal(apply(cancelled,{type:'deleteStock',inventoryId:'rose'}).data.inventory.length,0);
+});
