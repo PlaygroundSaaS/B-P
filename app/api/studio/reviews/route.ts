@@ -2,12 +2,13 @@ import { randomUUID, randomBytes, createHash } from 'node:crypto';
 import { hasStudioSession } from '@/lib/studio-auth';
 import { createStudioDatabaseClient, STUDIO_WORKSPACE } from '@/lib/studio-database';
 import { readJsonObject, requireSameOrigin, RequestError } from '@/lib/request-body';
-import { validateHighlight } from '@/lib/review-validation';
+import { isUuid, validateHighlight } from '@/lib/review-validation';
+import { REVIEW_PHOTO_BUCKET, reviewPhotoPath, selectWithReviewPhotos } from '@/lib/public-reviews';
 const json=(body:unknown,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'private, no-store'}});
 export async function GET(){
  if(!await hasStudioSession())return json({error:'Please sign in.'},401);
  const db=createStudioDatabaseClient();if(!db)return json({error:'Reviews are unavailable.'},503);
- const {data,error}=await db.from('studio_reviews').select('id,client_label,created_at,expires_at,revoked_at,public_name,review_text,rating,occasion,highlight,submitted_at,published').eq('workspace_key',STUDIO_WORKSPACE).order('created_at',{ascending:false}).limit(500);
+ const {data,error}=await selectWithReviewPhotos(columns=>db.from('studio_reviews').select(columns).eq('workspace_key',STUDIO_WORKSPACE).order('created_at',{ascending:false}).limit(500),'id,client_label,created_at,expires_at,revoked_at,public_name,review_text,rating,occasion,highlight,submitted_at,published');
  return error?json({error:'Reviews could not be loaded.'},503):json({reviews:data});
 }
 export async function POST(request:Request){
@@ -27,6 +28,15 @@ export async function POST(request:Request){
   let highlight;try{highlight=validateHighlight(body.highlight,review.review_text);}catch(error){return json({error:(error as Error).message},400);}
   const {data,error}=await db.from('studio_reviews').update({highlight}).eq('id',body.id).eq('workspace_key',STUDIO_WORKSPACE).not('submitted_at','is',null).select('id');
   if(error)throw error;if(!data?.length)return json({error:'This review could not be updated.'},404);return json({saved:true,highlight});
+ }
+ if(body.action==='remove-photo'){
+  // Removing a photo deletes the file too, so it is gone from the website and storage.
+  if(!isUuid(body.id)||!isUuid(body.photo))return json({error:'Choose a photo to remove.'},400);
+  const {data:review,error:readError}=await db.from('studio_reviews').select('photos').eq('id',body.id).eq('workspace_key',STUDIO_WORKSPACE).maybeSingle();
+  if(readError)throw readError;const photos:string[]=review?.photos??[];if(!photos.includes(body.photo))return json({error:'This photo has already been removed.'},404);
+  const {error}=await db.from('studio_reviews').update({photos:photos.filter(photo=>photo!==body.photo)}).eq('id',body.id).eq('workspace_key',STUDIO_WORKSPACE);if(error)throw error;
+  await db.storage.from(REVIEW_PHOTO_BUCKET).remove([reviewPhotoPath(body.id,body.photo)]);
+  return json({saved:true});
  }
  if(typeof body.id!=='string'||!['visibility','revoke'].includes(String(body.action)))return json({error:'Choose a valid review action.'},400);
  if(body.action==='visibility'&&typeof body.published!=='boolean')return json({error:'Choose whether to publish the review.'},400);
