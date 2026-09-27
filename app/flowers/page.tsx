@@ -13,9 +13,7 @@ const content = {
   "sections": [
     {
       "title": "Made for the person.",
-      "text": "Tell us your preferred colours, occasion and budget. We’ll confirm what is in season and create an arrangement around your brief.",
-      "image": "/assets/bouquet-04.jpg",
-      "alt": "A bouquet of peach, cream and blush roses"
+      "text": "Tell us your preferred colours, occasion and budget. We’ll confirm what is in season and create an arrangement around your brief."
     },
     {
       "title": "Something to look forward to.",
