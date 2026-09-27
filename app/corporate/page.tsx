@@ -1,7 +1,10 @@
 import { pageMetadata } from '@/lib/site-seo';
 import type { Metadata } from 'next';
 import ServicePage from '../public/service-page';
+import { loadSitePhotos } from '@/lib/site-photos-server';
 export const metadata = pageMetadata('/corporate');
+// Photos are chosen in the Studio; saving there refreshes this page straight away.
+export const revalidate = 300;
 const content = {
   "title": "Corporate & event flowers.",
   "label": "CORPORATE & HOSPITALITY",
@@ -23,4 +26,7 @@ const content = {
     }
   ]
 };
-export default function Page() { return <ServicePage content={content} path='/corporate'></ServicePage>; }
+export default async function Page() {
+  const photos = await loadSitePhotos();
+  return <ServicePage content={content} photos={photos['corporate-page']} path='/corporate' />;
+}
