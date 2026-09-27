@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve, dirname } from 'node:path';
 import test from 'node:test';
 import ts from 'typescript';
 
-// Website photos: Jade adds, removes and arranges the website galleries in the Studio.
+// Website photos: Jade changes the photos on every page of the website in the Studio.
 const require = createRequire(import.meta.url);
 const root = resolve(import.meta.dirname, '..');
 function load(path, mocks = {}) {
@@ -21,17 +21,16 @@ const uploadB = '/site-photos/aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee';
 const idOf = src => src.split('/').pop();
 const photos = load('lib/site-photos.ts');
 
-test('a saved gallery keeps built-in details and fills in missing descriptions', () => {
+test('descriptions are not edited in the Studio: built-in photos keep theirs and uploads get the section\'s', () => {
   const saved = photos.validateGalleryPhotos('weddings', [
-    { src: uploadA, alt: '  Blush roses\n and dahlias ', width: 1500, height: 2000 },
-    { src: '/assets/weddings/flower-girl-crown.webp', alt: '', width: 1, height: 1, label: 'Changed' },
+    { src: uploadA, alt: 'Typed in the Studio', width: 1500, height: 2000 },
+    { src: '/assets/weddings/flower-girl-crown.webp', alt: 'Changed', width: 1, height: 1, label: 'Changed' },
     { src: uploadB, width: 0, height: 900 },
   ]);
-  assert.deepEqual(saved[0], { src: uploadA, alt: 'Blush roses and dahlias', width: 1500, height: 2000 });
-  assert.equal(saved[1].label, 'The smallest, sweetest details');
-  assert.equal(saved[1].width, 953);
-  assert.match(saved[1].alt, /flower girl/);
-  assert.deepEqual(saved[2], { src: uploadB, alt: photos.DEFAULT_PHOTO_ALT });
+  assert.deepEqual(saved[0], { src: uploadA, alt: photos.SITE_GALLERIES.weddings.alt, width: 1500, height: 2000 });
+  assert.deepEqual(saved[1], photos.BUILT_IN_PHOTOS.find(photo => photo.src === '/assets/weddings/flower-girl-crown.webp'));
+  assert.deepEqual(saved[2], { src: uploadB, alt: photos.SITE_GALLERIES.weddings.alt });
+  assert.match(photos.validateGalleryPhotos('funerals-page', [{ src: uploadA }, null, null, null])[0].alt, /^Funeral flowers by Bramble & Petal/);
 });
 
 test('a gallery refuses photos from elsewhere, repeats and too many photos', () => {
@@ -40,16 +39,49 @@ test('a gallery refuses photos from elsewhere, repeats and too many photos', () 
   assert.throws(check('home', [{ src: 'https://example.com/photo.jpg' }]), /not from the website/);
   assert.throws(check('home', [{ src: '/site-photos/../../secret' }]), /not from the website/);
   assert.throws(check('home', [{ src: uploadA }, { src: uploadA }]), /appears twice/);
+  assert.throws(check('home', [null]), /could not be read/);
   assert.throws(check('home', Array.from({ length: 9 }, (_, i) => ({ src: `/site-photos/11111111-2222-4333-8444-55555555555${i}` }))), /up to 8 photos/);
-  assert.throws(check('home', [{ src: uploadA, alt: 'x'.repeat(201) }]), /under 200 characters/);
   assert.throws(check('home', 'photos'), /list of photos/);
   assert.deepEqual(photos.validateGalleryPhotos('home', []), []);
 });
 
-test('the removed bouquet is not offered back and the homepage starts with three photos', () => {
-  assert.equal(photos.BUILT_IN_PHOTOS.some(photo => photo.src.includes('bouquet-04')), false);
+test('single photos can be swapped, and only the ones that can be empty removed', () => {
+  const check = (key, list) => () => photos.validateGalleryPhotos(key, list);
+  const [large, top, framed] = photos.validateGalleryPhotos('home-weddings', [{ src: uploadA }, { src: '/assets/sympathy-spray.jpg' }, { src: uploadA }]);
+  assert.equal(large.src, uploadA);
+  assert.equal(top.src, '/assets/sympathy-spray.jpg');
+  assert.equal(framed.src, uploadA, 'the same photo can sit in two spots');
+  assert.throws(check('home-banner', [null]), /Top banner needs a photo/);
+  assert.throws(check('home-services', [{ src: uploadA }, null, { src: uploadA }]), /Funerals card needs a photo/);
+  assert.throws(check('home-services', [{ src: uploadA }]), /could not be read/);
+  assert.throws(check('funerals-page', [null, null, null, null]), /Top of the page needs a photo/);
+  assert.deepEqual(photos.validateGalleryPhotos('funerals-page', [{ src: '/assets/sympathy-spray.jpg' }, null, { src: uploadA }, null]).map(photo => photo?.src ?? null), ['/assets/sympathy-spray.jpg', null, uploadA, null]);
+  assert.deepEqual(photos.validateGalleryPhotos('corporate-page', [null, null, null, null]), [null, null, null, null], 'Corporate can keep its designed panel');
+});
+
+test('every page has a section, starting with the photos it showed before', () => {
+  const byPage = {};
+  for (const key of photos.GALLERY_KEYS) (byPage[photos.SITE_GALLERIES[key].page] ??= []).push(key);
+  assert.deepEqual(Object.keys(byPage), ['Homepage', 'Weddings', 'Funerals', 'Everyday flowers', 'Corporate', 'Our studio', 'Client Studio']);
+  assert.deepEqual(byPage.Homepage, ['home-banner', 'home-welcome', 'home-services', 'home-weddings', 'home-studio', 'home-remembrance', 'home']);
+  assert.deepEqual(photos.defaultPhotos('funerals-page').map(photo => photo?.src ?? null), ['/assets/sympathy-spray.jpg', '/assets/sympathy-tribute.jpg', null, null]);
+  assert.deepEqual(photos.defaultPhotos('home-remembrance').map(photo => photo.src), ['/assets/sympathy-tribute.jpg']);
   assert.equal(photos.SITE_GALLERIES.home.defaults.length, 3);
+  assert.equal(photos.SITE_GALLERIES.weddings.defaults.length, 13);
+  for (const key of photos.GALLERY_KEYS) {
+    const section = photos.SITE_GALLERIES[key];
+    if (section.kind === 'spots') for (const spot of section.spots) assert.ok(spot.photo || spot.empty, `${key}: ${spot.name} starts with a photo or can be empty`);
+  }
+  for (const photo of photos.BUILT_IN_PHOTOS) assert.ok(existsSync(resolve(root, 'public', photo.src.slice(1))), photo.src);
+  assert.equal(photos.BUILT_IN_PHOTOS.some(photo => photo.src.includes('bouquet-04')), false);
   assert.equal(new Set(photos.BUILT_IN_PHOTOS.map(photo => photo.src)).size, photos.BUILT_IN_PHOTOS.length);
+});
+
+test('the public pages take every photo from Website photos, apart from the logo', () => {
+  for (const page of ['app/page.tsx', 'app/public/service-page.tsx', 'app/weddings/page.tsx', 'app/funerals/page.tsx', 'app/flowers/page.tsx', 'app/corporate/page.tsx', 'app/our-studio/page.tsx', 'app/client-studio/page.tsx']) {
+    const assets = readFileSync(resolve(root, page), 'utf8').match(/\/assets\/[\w./-]+/g) ?? [];
+    assert.deepEqual(assets.filter(src => !src.startsWith('/assets/brand-')), [], page);
+  }
 });
 
 test('homepage strip image sizes follow the rows of four and pairs on phones', () => {
@@ -93,12 +125,22 @@ function websiteApi(fake, { signedIn = true, revalidated = [] } = {}) {
 const put = (body, origin = site) => new Request(`${site}/api/studio/website-photos`, { method: 'PUT', headers: { 'content-type': 'application/json', origin }, body: JSON.stringify(body) });
 const old = new Date(Date.now() - 3 * 86400000).toISOString(), fresh = new Date().toISOString();
 
-test('the Studio loads the starting photos until a gallery is saved', async () => {
-  const response = await websiteApi(fakeDatabase()).GET();
+test('the Studio loads the starting photos until a section is saved, page by page', async () => {
+  const fake = fakeDatabase({ rows: [{ gallery: 'funerals-page', photos: [{ src: uploadA }, null, null, null], updated_at: fresh }] });
+  const response = await websiteApi(fake).GET();
   assert.equal(response.status, 200);
   const { galleries, library } = await response.json();
-  assert.deepEqual(galleries.map(gallery => [gallery.key, gallery.photos.length, gallery.updatedAt]), [['home', 3, null], ['weddings', 13, null]]);
-  assert.ok(library.length >= 15);
+  assert.equal(galleries.length, photos.GALLERY_KEYS.length);
+  const byKey = Object.fromEntries(galleries.map(gallery => [gallery.key, gallery]));
+  assert.deepEqual([byKey.home.kind, byKey.home.max, byKey.home.photos.length, byKey.home.updatedAt], ['gallery', 8, 3, null]);
+  assert.equal(byKey.weddings.photos.length, 13);
+  assert.equal(byKey['funerals-page'].page, 'Funerals');
+  assert.deepEqual(byKey['funerals-page'].spots.map(spot => spot.name), ['Top of the page', 'Beside “Something meaningful.”', 'Beside “The right shape and scale.”', 'Beside “The details, taken care of.”']);
+  assert.deepEqual(byKey['funerals-page'].photos.map(photo => photo?.src ?? null), [uploadA, null, null, null]);
+  assert.equal(byKey['funerals-page'].updatedAt, fresh);
+  assert.equal(byKey['home-banner'].spots[0].empty, undefined, 'the banner cannot be left empty');
+  assert.ok(library.length >= 19);
+  assert.equal(library.at(-1).src, uploadA, 'a saved upload can be chosen for other sections');
 });
 
 test('the Studio explains when the database update has not been applied', async () => {
@@ -107,7 +149,7 @@ test('the Studio explains when the database update has not been applied', async 
   assert.match((await response.json()).error, /one-off update from Ashley/);
 });
 
-test('saving a gallery stores the new order, refreshes the pages and clears old removed uploads', async () => {
+test('saving a gallery stores the new order, refreshes its page and clears old removed uploads', async () => {
   const fake = fakeDatabase({ files: { [idOf(uploadA)]: fresh, [idOf(uploadB)]: old, 'cccccccc-bbbb-4ccc-8ddd-eeeeeeeeeeee': old, 'dddddddd-bbbb-4ccc-8ddd-eeeeeeeeeeee': fresh } });
   const revalidated = [];
   const api = websiteApi(fake, { revalidated });
@@ -115,7 +157,7 @@ test('saving a gallery stores the new order, refreshes the pages and clears old 
   assert.equal(response.status, 200);
   const first = await response.json();
   assert.deepEqual(first.photos.map(photo => photo.src), [uploadA, '/assets/studio-consultations.jpg', uploadB]);
-  assert.deepEqual(revalidated, ['/', '/weddings']);
+  assert.deepEqual(revalidated, ['/']);
   // An old upload no gallery uses is deleted; a fresh unsaved upload is kept for a day.
   assert.deepEqual(fake.state.removed, ['test/website/cccccccc-bbbb-4ccc-8ddd-eeeeeeeeeeee']);
 
@@ -123,6 +165,17 @@ test('saving a gallery stores the new order, refreshes the pages and clears old 
   assert.equal(response.status, 200);
   assert.deepEqual(fake.state.rows[0].photos.map(photo => photo.src), [uploadA]);
   assert.ok(fake.state.removed.includes(`test/website/${idOf(uploadB)}`), 'the removed old upload is deleted');
+});
+
+test('saving a page\'s photos refreshes that page and keeps uploads it uses', async () => {
+  const fake = fakeDatabase({ files: { [idOf(uploadA)]: old, [idOf(uploadB)]: old } });
+  const revalidated = [];
+  const response = await websiteApi(fake, { revalidated }).PUT(put({ gallery: 'funerals-page', updatedAt: null, photos: [{ src: '/assets/sympathy-tribute.jpg' }, null, { src: uploadA }, null] }));
+  assert.equal(response.status, 200);
+  assert.deepEqual((await response.json()).photos.map(photo => photo?.src ?? null), ['/assets/sympathy-tribute.jpg', null, uploadA, null]);
+  assert.deepEqual(revalidated, ['/funerals']);
+  assert.deepEqual(fake.state.removed, [`test/website/${idOf(uploadB)}`]);
+  assert.equal((await websiteApi(fake).PUT(put({ gallery: 'home-banner', updatedAt: null, photos: [null] }))).status, 400);
 });
 
 test('a save from an out-of-date window is refused', async () => {
@@ -167,8 +220,8 @@ function photoRoute(fake, signedIn = false) {
 }
 const view = (route, src) => route.GET(new Request(`${site}${src}`), { params: Promise.resolve({ id: idOf(src) }) });
 
-test('the website serves an uploaded photo only while a saved gallery shows it', async () => {
-  const fake = fakeDatabase({ rows: [{ gallery: 'weddings', photos: [{ src: uploadA, alt: 'Roses' }], updated_at: fresh }], files: { [idOf(uploadA)]: fresh, [idOf(uploadB)]: fresh } });
+test('the website serves an uploaded photo only while a saved section shows it', async () => {
+  const fake = fakeDatabase({ rows: [{ gallery: 'home-welcome', photos: [{ src: uploadA, alt: 'Roses' }], updated_at: fresh }], files: { [idOf(uploadA)]: fresh, [idOf(uploadB)]: fresh } });
   let response = await view(photoRoute(fake), uploadA);
   assert.equal(response.status, 200);
   assert.match(response.headers.get('cache-control'), /^public/);
@@ -179,11 +232,20 @@ test('the website serves an uploaded photo only while a saved gallery shows it',
   assert.equal((await view(photoRoute(fake, true), '/site-photos/not-a-photo')).status, 404);
 });
 
-test('public pages fall back to the starting photos when the galleries cannot be read', async () => {
+test('public pages fall back to the starting photos when the sections cannot be read', async () => {
   const server = fake => load('lib/site-photos-server.ts', { '@/lib/studio-database': { STUDIO_WORKSPACE: 'test', createStudioDatabaseClient: () => fake?.db ?? null } });
-  assert.equal((await server(null).loadGallery('home')).length, 3);
-  assert.equal((await server(fakeDatabase({ failRead: { code: '42P01' } })).loadGallery('weddings')).length, 13);
-  const saved = fakeDatabase({ rows: [{ gallery: 'home', photos: [{ src: '/assets/bouquet-04.jpg' }, { src: uploadA, alt: 'Roses' }], updated_at: fresh }, { gallery: 'weddings', photos: [], updated_at: fresh }] });
-  assert.deepEqual((await server(saved).loadGallery('home')).map(photo => photo.src), [uploadA], 'photos that no longer check out are skipped');
-  assert.deepEqual(await server(saved).loadGallery('weddings'), [], 'an emptied gallery stays empty');
+  assert.equal((await server(null).loadSitePhotos()).home.length, 3);
+  const unreadable = await server(fakeDatabase({ failRead: { code: '42P01' } })).loadSitePhotos();
+  assert.equal(unreadable.weddings.length, 13);
+  assert.equal(unreadable['home-banner'][0].src, '/assets/weddings/wedding-hero-wide.webp');
+  const saved = await server(fakeDatabase({ rows: [
+    { gallery: 'home', photos: [{ src: '/assets/bouquet-04.jpg' }, { src: uploadA, alt: 'Roses' }], updated_at: fresh },
+    { gallery: 'weddings', photos: [], updated_at: fresh },
+    { gallery: 'home-services', photos: [null, { src: '/assets/bouquet-04.jpg' }], updated_at: fresh },
+    { gallery: 'weddings-page', photos: [{ src: uploadB }, null], updated_at: fresh },
+  ] })).loadSitePhotos();
+  assert.deepEqual(saved.home.map(photo => photo.src), [uploadA], 'photos that no longer check out are skipped');
+  assert.deepEqual(saved.weddings, [], 'an emptied gallery stays empty');
+  assert.deepEqual(saved['home-services'].map(photo => photo.src), photos.defaultPhotos('home-services').map(photo => photo.src), 'a spot that needs a photo falls back to its starting one');
+  assert.deepEqual(saved['weddings-page'].map(photo => photo?.src ?? null), [uploadB, null, '/assets/weddings/pastel-pedestal-details.webp', null], 'an emptied spot stays empty and a spot added later starts with its own photo');
 });

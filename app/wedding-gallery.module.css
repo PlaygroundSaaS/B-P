@@ -23,12 +23,6 @@
   background: var(--bp-cream);
 }
 
-.photo figcaption {
-  padding-top: 14px;
-  color: var(--bp-ink-soft);
-  font: 500 23px/1.3 'Cormorant Garamond', serif;
-}
-
 .action {
   max-width: 1320px;
   margin: 40px auto 0;
@@ -41,5 +35,4 @@
 @media (max-width: 600px) {
   .section { padding: 72px 24px; }
   .grid { grid-template-columns: minmax(0, 1fr); gap: 28px; }
-  .photo figcaption { font-size: 22px; }
 }

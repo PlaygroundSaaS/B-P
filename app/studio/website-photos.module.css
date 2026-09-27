@@ -1,4 +1,10 @@
 .page { container-type:inline-size; }
+.pages { display:flex; gap:8px; margin:0 0 20px; padding:2px 2px 6px; overflow-x:auto; scrollbar-width:thin; }
+.pages button { flex-shrink:0; display:inline-flex; align-items:center; gap:6px; min-height:40px; margin:0; padding:6px 16px; border:1px solid #d9d3c8; border-radius:20px; background:#fff; color:var(--atelier-ink); font-size:13px; letter-spacing:0; text-transform:none; white-space:nowrap; }
+.pages button:hover { border-color:var(--atelier-green); }
+.pages button[aria-pressed=true] { border-color:var(--atelier-green); background:var(--atelier-green); color:#fff; }
+.dot { width:7px; height:7px; border-radius:50%; background:var(--atelier-rose); }
+.pages button[aria-pressed=true] .dot { background:#fff; }
 .gallery { margin:0 0 24px; }
 .header { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
 .header h2 { margin:0 0 6px!important; }
@@ -16,12 +22,23 @@
 .gallery button:not(:global(.button)),.actions select { min-height:40px; margin:0; padding:6px 12px; border:1px solid #d9d3c8; border-radius:6px; background:#fff; color:var(--atelier-ink); font-size:12px; letter-spacing:0; text-transform:none; }
 .gallery button:not(:global(.button)):hover:not(:disabled) { border-color:var(--atelier-green); }
 .thumb .remove { position:absolute; top:8px; right:8px; min-height:32px!important; padding:4px 10px!important; border:0!important; border-radius:16px!important; background:rgba(255,252,248,.94)!important; color:#8a3b3b!important; font-size:11px!important; font-weight:600; }
-.description { display:block; font-size:12px; line-height:1.4; }
-.description small { color:var(--atelier-muted); }
-.description textarea { display:block; width:100%; min-height:58px; margin-top:5px; padding:8px; border:1px solid var(--atelier-line); border-radius:6px; background:#fff; color:var(--atelier-ink); font:inherit; font-size:13px; resize:vertical; }
 .actions { display:flex; gap:6px; margin-top:auto; }
 .actions button:not(:global(.button)) { min-width:40px; padding:6px 0; font-size:15px; }
 .actions select { flex:1; min-width:0; padding:6px 8px; }
+.spots { margin-top:16px; }
+.spotName { margin:0; font-size:13px; line-height:1.4; color:var(--atelier-ink); }
+.emptySpot { display:grid; place-items:center; height:100%; margin:0; padding:12px; text-align:center; font-size:12px; line-height:1.45; color:var(--atelier-muted); border:1px dashed #cfc8ba; border-radius:6px; }
+.card[data-picking] { border-color:var(--atelier-green); box-shadow:0 0 0 1px var(--atelier-green); }
+.spots .actions button:not(:global(.button)) { flex:1; padding:6px 10px; font-size:12px; }
+.picker { display:grid; gap:14px; margin-top:16px; padding:16px; border:1px solid var(--atelier-green); border-radius:10px; background:#fff; scroll-margin-bottom:120px; }
+.pickerHeader { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.pickerHeader h3 { margin:0; font-size:15px; font-weight:600; }
+.choices { display:grid; grid-template-columns:repeat(auto-fill,minmax(96px,1fr)); gap:8px; }
+.choices button:not(:global(.button)) { position:relative; display:block; aspect-ratio:1; min-height:0; margin:0; padding:0; overflow:hidden; border:1px solid var(--atelier-line); border-radius:6px; background:var(--atelier-cream); }
+.choices button:hover:not(:disabled) { outline:2px solid var(--atelier-green); }
+.choices button[aria-pressed=true] { outline:3px solid var(--atelier-green); outline-offset:-3px; }
+.choices img { display:block; width:100%; height:100%; object-fit:cover; }
+.choices span { position:absolute; left:6px; bottom:6px; padding:2px 8px; border-radius:10px; background:var(--atelier-green); color:#fff; font-size:11px; }
 .empty { padding:24px; border:1px dashed var(--atelier-line); border-radius:10px; text-align:center; color:var(--atelier-muted); }
 
 .add { display:grid; gap:12px; margin-top:18px; }
@@ -53,4 +70,6 @@
 }
 @container (max-width:380px) {
   .grid { grid-template-columns:1fr; }
+  .grid.spots { grid-template-columns:1fr 1fr; }
+  .emptySpot { font-size:11px; }
 }
