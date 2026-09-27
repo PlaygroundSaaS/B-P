@@ -2,8 +2,10 @@ import { pageMetadata } from '@/lib/site-seo';
 import type { Metadata } from 'next';
 import ServicePage from '../public/service-page';
 import WeddingGallery from '../wedding-gallery';
-import { weddingImages } from '../public/wedding-images';
+import { loadGallery } from '@/lib/site-photos-server';
 export const metadata = pageMetadata('/weddings');
+// The gallery is arranged in the Studio; saving there refreshes this page straight away.
+export const revalidate = 300;
 const content = {
   "title": "Wedding flowers in Southampton, the New Forest & Hampshire.",
   "label": "THE WEDDING COLLECTION",
@@ -31,4 +33,7 @@ const content = {
     }
   ]
 };
-export default function Page() { return <ServicePage content={content} path='/weddings'><section className="public-wrap public-full-portfolio"><p className="public-kicker">REAL WEDDINGS, REAL DETAILS</p><h2>A closer look at our work.</h2><WeddingGallery images={weddingImages} showCaptions={false}/></section></ServicePage>; }
+export default async function Page() {
+  const photos = await loadGallery('weddings');
+  return <ServicePage content={content} path='/weddings'>{photos.length > 0 && <section className="public-wrap public-full-portfolio" id="wedding-gallery"><p className="public-kicker">REAL WEDDINGS, REAL DETAILS</p><h2>A closer look at our work.</h2><WeddingGallery images={photos.map(photo => ({ ...photo, label: photo.label || photo.alt }))} showCaptions={false}/></section>}</ServicePage>;
+}
