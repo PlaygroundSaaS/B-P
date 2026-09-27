@@ -5,7 +5,7 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 import PublicHeader from '../public-header';
 
-export function Brand() { return <span className="public-brand-lockup"><Image src="/assets/brand-mark.jpg" width={78} height={70} alt="" /><span>BRAMBLE &amp; PETAL<small>FLORIST STUDIO</small></span></span>; }
+export function Brand() { return <span className="public-brand-lockup"><Image src="/assets/brand-mark.webp" width={78} height={70} alt="" /><span>BRAMBLE &amp; PETAL<small>FLORIST STUDIO</small></span></span>; }
 export function Arrow() { return <span aria-hidden="true">⟶</span>; }
 export function TextLink({ href, children }: { href: string; children: ReactNode }) { return <Link className="public-text-link" href={href}>{children}<Arrow /></Link>; }
 export function Intro({ label, title, children }: { label: string; title: ReactNode; children?: ReactNode }) { return <div className="public-intro"><p className="public-kicker">{label}</p><h2>{title}</h2>{children && <p className="public-copy">{children}</p>}</div>; }
