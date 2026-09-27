@@ -16,8 +16,7 @@ export function requireSameOrigin(request: Request) {
   }
 }
 
-export async function readJsonObject(request: Request, maximum = 32_768): Promise<Record<string, unknown>> {
-  if (!request.headers.get('content-type')?.toLowerCase().includes('application/json')) throw new RequestError('Send a JSON request.', 415);
+async function readBounded(request: Request, maximum: number) {
   if (Number(request.headers.get('content-length')) > maximum) throw new RequestError('This request is too large.', 413);
   const reader = request.body?.getReader();
   if (!reader) throw new RequestError('Please complete the form.');
@@ -32,9 +31,23 @@ export async function readJsonObject(request: Request, maximum = 32_768): Promis
       chunks.push(value);
     }
   } finally { reader.releaseLock(); }
+  return Buffer.concat(chunks);
+}
+
+export async function readJsonObject(request: Request, maximum = 32_768): Promise<Record<string, unknown>> {
+  if (!request.headers.get('content-type')?.toLowerCase().includes('application/json')) throw new RequestError('Send a JSON request.', 415);
+  const bytes = await readBounded(request, maximum);
   let body: unknown;
-  try { body = JSON.parse(Buffer.concat(chunks).toString('utf8')); }
+  try { body = JSON.parse(bytes.toString('utf8')); }
   catch { throw new RequestError('Please send valid form details.'); }
   if (!body || typeof body !== 'object' || Array.isArray(body)) throw new RequestError('Please complete the form.');
   return body as Record<string, unknown>;
+}
+
+export async function readMultipartForm(request: Request, maximum: number): Promise<FormData> {
+  const type = request.headers.get('content-type') || '';
+  if (!type.toLowerCase().startsWith('multipart/form-data')) throw new RequestError('Please complete the form.', 415);
+  const bytes = await readBounded(request, maximum);
+  try { return await new Response(bytes, { headers: { 'Content-Type': type } }).formData(); }
+  catch { throw new RequestError('Please send valid form details.'); }
 }
