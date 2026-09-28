@@ -31,3 +31,18 @@ export function validateHighlight(value: unknown, reviewText: string) {
 export function isMissingHighlightColumn(error: { code?: string; message?: string } | null | undefined) {
  return !!error && (error.code === '42703' || error.code === 'PGRST204') && /highlight/.test(error.message ?? '');
 }
+// Clients can attach up to three photos to a review. The browser resizes them first,
+// so three always fit within Vercel's 4.5 MB request limit.
+export const REVIEW_PHOTO_LIMIT = 3;
+export const REVIEW_PHOTO_MAX_BYTES = 1_400_000;
+export const isUuid = (value: unknown): value is string => typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(value);
+export const reviewPhotoUrl = (review: string, photo: string) => `/api/reviews/${review}/photos/${photo}`;
+// Recognises JPEG, PNG and WebP by their first bytes, whatever the file name or browser claims.
+export function reviewPhotoType(bytes: Uint8Array) {
+ if (bytes.length < 12) return null;
+ const ascii = (start: number, end: number) => String.fromCharCode(...bytes.subarray(start, end));
+ if (bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return 'image/jpeg';
+ if ([137, 80, 78, 71, 13, 10, 26, 10].every((value, index) => bytes[index] === value)) return 'image/png';
+ if (ascii(0, 4) === 'RIFF' && ascii(8, 12) === 'WEBP') return 'image/webp';
+ return null;
+}

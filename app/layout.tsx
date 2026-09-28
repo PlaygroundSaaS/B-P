@@ -9,8 +9,8 @@ import './public-site.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: { default: 'Bramble & Petal | Southampton Florist', template: '%s | Bramble & Petal' },
-  description: 'Southampton florist creating wedding flowers, funeral tributes, seasonal bouquets and corporate arrangements.',
+  title: { default: 'Bramble & Petal | Southampton & New Forest Florist', template: '%s | Bramble & Petal' },
+  description: 'Southampton and New Forest florist creating wedding flowers, funeral tributes, seasonal bouquets and corporate arrangements across Hampshire.',
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

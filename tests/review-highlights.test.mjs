@@ -70,7 +70,7 @@ test('the website still shows reviews before the highlight column exists', async
   const { api, selects } = listApi('app/api/reviews/route.ts');
   const response = await api.GET();
   assert.equal(response.status, 200);
-  assert.deepEqual((await response.json()).reviews, [{ id: 'r', review_text: review }]);
+  assert.deepEqual((await response.json()).reviews, [{ id: 'r', review_text: review, photos: [] }]);
   assert.equal(selects.length, 2);
   assert.ok(!selects[1].includes('highlight'));
 });

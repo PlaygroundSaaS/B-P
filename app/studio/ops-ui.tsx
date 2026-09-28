@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { useState } from 'react';
 import type { StudioAsset, StudioCommand } from '@/lib/operations-types';
 import type { StudioData } from '@/lib/types';
+import { describeDeletion, type DeletionScope } from '@/lib/studio-commands';
 export type SaveData = (data: StudioData, message: string) => Promise<boolean>;
 export type RunCommand = (command: StudioCommand) => Promise<StudioData | null>;
 export type OpenRecord = (tab: string, id?: string) => void;
@@ -24,3 +25,8 @@ export function Assets({ value, onChange, imagesOnly = false, label = 'Add image
   }} /><small>JPEG, PNG, WebP{!imagesOnly && ' or PDF'} · up to 3 MB each</small></label>{error && <p role="alert">{error}</p>}<div className="ops-asset-list">{value.map(a => <figure key={a.id}>{a.type.startsWith('image/') ? <Photo src={a.url} alt={a.name} /> : <span className="ops-file-icon">PDF</span>}<figcaption><a href={a.url} target="_blank" rel="noreferrer">{a.name}</a>{removable && <button type="button" aria-label={`Remove ${a.name}`} onClick={() => onChange(value.filter(v => v.id !== a.id))}>×</button>}</figcaption></figure>)}</div></div>;
 }
 export function Status({ children }: { children: React.ReactNode }) { return <span className="ops-status">{children}</span>; }
+/** One confirmation for deleting a client or event, listing everything that goes with it. */
+export function confirmDeletion(question: string, scope: DeletionScope) {
+  const { removed, stockReturned } = describeDeletion(scope);
+  return globalThis.confirm([question, removed.length ? `This removes ${removed.join(', ')}.` : '', stockReturned, 'Nothing is recorded as wastage. This cannot be undone.'].filter(Boolean).join('\n\n'));
+}

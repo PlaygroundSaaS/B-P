@@ -12,3 +12,5 @@
 @media(max-width: 450px) { .quickForm fieldset { grid-template-columns: 1fr; }.quickForm input { font-size: 16px; } }
 
 .stockName{display:flex;align-items:center;gap:10px}
+.rowActions{display:flex;gap:8px}
+.rowActions .deleteButton{color:#8d3232}

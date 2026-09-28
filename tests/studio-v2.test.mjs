@@ -14,7 +14,7 @@ function load(path, mocks = {}) {
   return module.exports;
 }
 const { emptyStudio, calculateTotals } = load('lib/pricing.ts');
-const { applyStudioCommand, stockSummary, eventQuoteTotals, recipeRevision } = load('lib/studio-commands.ts');
+const { applyStudioCommand, stockSummary, stockValue, totalStockValue, eventQuoteTotals, recipeRevision } = load('lib/studio-commands.ts');
 const { profitModel, recipeProfitInput, eventProfitInput } = load('lib/profitability.ts');
 const { businessIntelligence } = load('lib/business-intelligence.ts');
 const { clientEvent, clientQuotation, clientAssetAllowed } = load('lib/client-portal.ts');
@@ -64,4 +64,78 @@ test('paid standalone order cannot be amended below payments already recorded', 
 test('cancelled orders cannot receive a new payment', () => {
   const d=apply(purchased(),{type:'returnRecipe',recipeId:'recipe',reason:'Not needed'}).data;
   assert.throws(()=>apply(d,{type:'payment',payment:{id:'cancelled-payment',orderId:'recipe',clientName:'Sample',kind:'Balance',method:'Cash',amount:1,date:'2026-09-08',reference:''}}),/Cancelled orders/);
+});
+test('deleting a stock item removes it without recording wastage or a stock movement', () => {
+  const d = state(); d.inventory.push({id:'tulip',name:'Tulip',costPerStem:1,stemsPurchased:10,stemsRemaining:10}); d.wastage = [{id:'old-waste',inventoryId:'rose',name:'Rose',quantity:2,unitCost:2,recordedAt:'2026-09-01T12:00:00Z'}];
+  const result = apply(d,{type:'deleteStock',inventoryId:'rose'});
+  assert.deepEqual(result.data.inventory.map(i=>i.id),['tulip']); assert.equal(result.data.inventory[0].stemsRemaining,10);
+  assert.deepEqual(result.transactions,[]); assert.deepEqual(result.data.wastage,d.wastage); assert.deepEqual(result.recordIds,['rose']);
+  assert.throws(()=>apply(result.data,{type:'deleteStock',inventoryId:'rose'}),/already been deleted/);
+});
+test('stock reserved for purchased work cannot be deleted until that order is cancelled', () => {
+  const d = purchased();
+  assert.throws(()=>apply(d,{type:'deleteStock',inventoryId:'rose'}),/reserved for purchased work/);
+  const cancelled = apply(d,{type:'returnRecipe',recipeId:'recipe',reason:'Test order'}).data;
+  assert.equal(apply(cancelled,{type:'deleteStock',inventoryId:'rose'}).data.inventory.length,0);
+});
+test('stock value uses the recorded cost of stock still in the studio, including stems reserved for purchased work', () => {
+  const d = state(); d.inventory.push({id:'tulip',name:'Tulip',costPerStem:0.85,stemsPurchased:10,stemsRemaining:3});
+  assert.deepEqual(stockValue(d,'rose'),{value:40,reserved:0}); assert.deepEqual(stockValue(d,'tulip'),{value:2.55,reserved:0});
+  assert.deepEqual(totalStockValue(d),{value:42.55,reserved:0});
+  const bought = purchased(saved(d));
+  assert.deepEqual(stockValue(bought,'rose'),{value:40,reserved:8}); assert.deepEqual(totalStockValue(bought),{value:42.55,reserved:8});
+  const made = apply(bought,{type:'production',recipeId:'recipe',status:'Completed',assignedTo:'Jade',due:''}).data;
+  assert.deepEqual(totalStockValue(made),{value:34.55,reserved:0});
+  assert.deepEqual(totalStockValue({...emptyStudio(),inventory:[]}),{value:0,reserved:0});
+});
+const { deletionScope, describeDeletion } = load('lib/studio-commands.ts');
+const booked = () => {
+  let d = apply(group(), {type:'purchaseEventQuote',quoteId:'formal',allowShortages:false}).data;
+  d = apply(d, {type:'payment',payment:{id:'deposit',orderId:'formal',clientName:'Sample',kind:'Deposit',method:'Cash',amount:20,date:'2026-09-08',reference:''}}).data;
+  const ops = d.operations; const client = d.customers[0].id;
+  d.plans[0].customerId = client;
+  ops.deliveries.push({id:'drop',planId:'event',clientName:'Sample',address:'',venue:'',contact:'',phone:'',date:'2026-10-10',window:'',setupTime:'',collectionDate:'',collectionTime:'',driver:'',vehicle:'',notes:'',access:'',parking:'',setupRequirements:'',status:'Planned',checklist:[]});
+  ops.tasks.push({id:'task',planId:'event',title:'Prep',due:'2026-10-09',assignedTo:'',completed:false,notes:''});
+  ops.hireItems.push({id:'vase',name:'Vase',category:'Vase',quantity:5,replacementCost:10,notes:''});
+  ops.hireReservations.push({id:'hire',itemId:'vase',planId:'event',clientName:'Sample',quantity:2,from:'2026-10-09',to:'2026-10-11',status:'Reserved',returned:0,damaged:0,lost:0,notes:''});
+  ops.leads.push({id:'lead',clientName:'Sample',contact:'',occasion:'Wedding',status:'Won',eventDate:'2026-10-10',followUpDate:'',consultationDate:'',consultationTime:'',notes:'',createdAt:'2026-09-01',customerId:client,planId:'event'});
+  ops.crm.push({id:'note',customerId:client,kind:'Note',text:'Test client',date:'2026-09-01',dueDate:'',completed:false,assets:[]});
+  ops.recurring.push({id:'weekly',customerId:client,clientName:'Sample',recipeId:'',frequency:'Weekly',price:30,address:'',style:'',colours:'',variations:'',billing:'',start:'2026-09-01',end:'',nextDate:'2026-09-15',status:'Active'});
+  // Another client's event, and a different client who happens to share the name, must be untouched.
+  d.customers.push({id:'other',name:'Other',contact:'',notes:'',createdAt:'2026-09-01'},{id:'twin',name:'Sample',contact:'',notes:'',createdAt:'2026-09-01'});
+  d.plans.push({id:'other-event',clientName:'Other',customerId:'other',type:'Funeral',notes:'',createdAt:'2026-09-01',finishedEstimate:null,eventDate:'2026-11-01'},{id:'twin-event',clientName:'Sample',customerId:'twin',type:'Wedding',notes:'',createdAt:'2026-09-01',finishedEstimate:null,eventDate:'2026-12-01'});
+  d.quotes.push({...quote('template'),clientName:'',isTemplate:true});
+  return d;
+};
+test('deleting an event removes its recipes, quotation, payments and bookings and returns reserved stock without wastage', () => {
+  const d = booked(); assert.equal(d.inventory[0].stemsRemaining,12);
+  const summary = describeDeletion(deletionScope(d,{planId:'event'}));
+  assert.deepEqual(summary.removed,['1 event','2 recipes','1 quotation','1 payment (£20.00)','1 delivery','1 hire booking','1 task']);
+  assert.equal(summary.stockReturned,'Reserved stock goes back into Inventory: 8 Rose.');
+  const result = apply(d,{type:'deleteEvent',planId:'event'}); const next = result.data;
+  assert.deepEqual(next.plans.map(p=>p.id),['other-event','twin-event']); assert.equal(next.jobs.length,0); assert.deepEqual(next.quotes.map(q=>q.id),['template']);
+  assert.equal(next.operations.eventQuotes.length,0); assert.equal(next.operations.payments.length,0); assert.equal(next.operations.deliveries.length,0);
+  assert.equal(next.operations.tasks.length,0); assert.equal(next.operations.hireReservations.length,0);
+  assert.equal(next.inventory[0].stemsRemaining,20); assert.deepEqual(stockSummary(next,'rose'),{available:20,reserved:0,onHand:20});
+  assert.deepEqual(result.transactions.map(t=>[t.kind,t.quantity]),[['Release',4],['Release',4]]); assert.deepEqual(next.wastage,d.wastage);
+  // The client, their notes and their enquiry stay; the enquiry just loses its link to the deleted event.
+  assert.equal(next.customers.length,3); assert.equal(next.operations.crm.length,1); assert.equal(next.operations.leads[0].planId,undefined);
+  assert.match(result.action,/^Event deleted: Sample wedding on 2026-10-10/); assert.ok(isStudioData(next));
+  assert.throws(()=>apply(next,{type:'deleteEvent',planId:'event'}),/already been deleted/);
+});
+test('deleting a client removes their events and linked records but no one else’s', () => {
+  const d = booked(); const client = d.customers[0].id;
+  const scope = deletionScope(d,{customerId:client});
+  assert.deepEqual(describeDeletion(scope).removed,['1 event','2 recipes','1 quotation','1 payment (£20.00)','1 delivery','1 hire booking','1 task','1 enquiry','1 client note','1 routine flower order']);
+  const next = apply(d,{type:'deleteClient',customerId:client}).data;
+  assert.deepEqual(next.customers.map(c=>c.id),['other','twin']); assert.deepEqual(next.plans.map(p=>p.id),['other-event','twin-event']);
+  assert.deepEqual(next.quotes.map(q=>q.id),['template']); assert.equal(next.jobs.length,0); assert.equal(next.inventory[0].stemsRemaining,20);
+  for (const key of ['eventQuotes','payments','deliveries','tasks','hireReservations','leads','crm','recurring']) assert.equal(next.operations[key].length,0,key);
+  assert.equal(next.operations.hireItems.length,1); assert.ok(isStudioData(next));
+  assert.throws(()=>apply(next,{type:'deleteClient',customerId:client}),/already been deleted/);
+});
+test('deleting an event keeps stock already used in production as used', () => {
+  let d = booked(); for (const id of ['a','b']) d = apply(d,{type:'production',recipeId:id,status:'Completed',assignedTo:'',due:''}).data;
+  const result = apply(d,{type:'deleteEvent',planId:'event'});
+  assert.equal(describeDeletion(deletionScope(d,{planId:'event'})).stockReturned,''); assert.deepEqual(result.transactions,[]); assert.equal(result.data.inventory[0].stemsRemaining,12);
 });

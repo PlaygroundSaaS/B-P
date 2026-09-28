@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import type { ReactNode } from 'react';
 
-export type IconName = 'home' | 'calendar' | 'clients' | 'events' | 'flower' | 'orders' | 'suppliers' | 'finance' | 'studio' | 'plus' | 'arrow' | 'delivery' | 'waste' | 'check';
+export type IconName = 'home' | 'calendar' | 'clients' | 'events' | 'flower' | 'orders' | 'suppliers' | 'finance' | 'studio' | 'plus' | 'arrow' | 'delivery' | 'waste' | 'check' | 'photo';
 const paths: Record<IconName, string> = {
   home: 'M3 10 12 3l9 7M5 9v12h5v-7h4v7h5V9',
   calendar: 'M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2ZM7 3v4m10-4v4M3 10h18M7 14h2m4 0h2m-8 4h2',
@@ -15,6 +15,7 @@ const paths: Record<IconName, string> = {
   plus: 'M12 5v14M5 12h14', arrow: 'M4 12h16m-6-6 6 6-6 6',
   delivery: 'M1 5h13v12H1Zm13 5h5l4 4v3h-9M5 21a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm14 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z',
   waste: 'M5 7h14m-12 0 1 14h8l1-14M9 7V3h6v4m-4 4v6m3-6v6', check: 'm5 12 4 4L19 6',
+  photo: 'M3 5h18v14H3Zm0 11 5-5 4 4 3-3 6 6M15.5 10a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z',
 };
 export function StudioIcon({ name }: { name: IconName }) { return <svg className="atelier-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[name]} /></svg>; }
 export function StudioBrand() { return <Image className="atelier-logo" src="/assets/brand-logo.png" alt="Bramble & Petal Florist Studio" width={170} height={138} priority />; }
