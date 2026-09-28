@@ -2,7 +2,7 @@ import { randomUUID, randomBytes, createHash } from 'node:crypto';
 import { hasStudioSession } from '@/lib/studio-auth';
 import { createStudioDatabaseClient, STUDIO_WORKSPACE } from '@/lib/studio-database';
 import { readJsonObject, requireSameOrigin, RequestError } from '@/lib/request-body';
-import { isUuid, validateHighlight } from '@/lib/review-validation';
+import { isMissingHighlightColumn, isUuid, validateHighlight } from '@/lib/review-validation';
 import { REVIEW_PHOTO_BUCKET, reviewPhotoPath, selectWithReviewPhotos } from '@/lib/public-reviews';
 const json=(body:unknown,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'private, no-store'}});
 export async function GET(){
@@ -27,6 +27,7 @@ export async function POST(request:Request){
   if(readError)throw readError;if(!review?.review_text)return json({error:'This review could not be updated.'},404);
   let highlight;try{highlight=validateHighlight(body.highlight,review.review_text);}catch(error){return json({error:(error as Error).message},400);}
   const {data,error}=await db.from('studio_reviews').update({highlight}).eq('id',body.id).eq('workspace_key',STUDIO_WORKSPACE).not('submitted_at','is',null).select('id');
+  if(isMissingHighlightColumn(error))return json({error:'Highlights are not switched on in the database yet. Please ask for the review highlights update to be applied.'},503);
   if(error)throw error;if(!data?.length)return json({error:'This review could not be updated.'},404);return json({saved:true,highlight});
  }
  if(body.action==='remove-photo'){

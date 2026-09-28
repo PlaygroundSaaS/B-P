@@ -27,6 +27,10 @@ export function validateHighlight(value: unknown, reviewText: string) {
  if (!collapse(reviewText).includes(highlight)) throw new Error('The highlight must be copied word for word from the client’s review.');
  return highlight;
 }
+// True when the database has not had the highlight migration yet, so reviews still load without it.
+export function isMissingHighlightColumn(error: { code?: string; message?: string } | null | undefined) {
+ return !!error && (error.code === '42703' || error.code === 'PGRST204') && /highlight/.test(error.message ?? '');
+}
 // Clients can attach up to three photos to a review. The browser resizes them first,
 // so three always fit within Vercel's 4.5 MB request limit.
 export const REVIEW_PHOTO_LIMIT = 3;
